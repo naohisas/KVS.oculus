@@ -1,8 +1,10 @@
 #pragma once
 
+#include <string>
 #include <OVR_CAPI.h>
 #include <OVR_Version.h>
-#include <string>
+#include "OVR.h"
+
 
 namespace kvs
 {

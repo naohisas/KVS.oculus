@@ -1,6 +1,5 @@
 #include "Application.h"
-#include "Oculus.h"
-
+#include "OVR.h"
 
 namespace kvs
 {
@@ -15,7 +14,7 @@ Application::Application( int argc, char** argv ):
     if ( flag )
     {
         flag = false;
-        if ( !ovr_Initialize( NULL ) ) { return; }
+        if ( !kvs::oculus::Initialize( NULL ) ) { return; }
     }
 }
 
@@ -26,7 +25,7 @@ int Application::run()
 
 void Application::quit()
 {
-    ovr_Shutdown();
+    kvs::oculus::Shutdown();
 }
 
 } // end of namespace oculus

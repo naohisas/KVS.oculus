@@ -22,7 +22,7 @@ def KVSMake( option ):
     elif option == 'debug_rebuild': make_option = "kvsmake clean DEBUG=1" + s + "kvsmake lib DEBUG=1" + s
     else:
         print( "Error: Unknown option '" + option +"'" )
-        print( "Usage: python kvsmake.py [clean | distclean | rebuild]" )
+        print( "Usage: python kvsmake.py [clean | distclean | rebuild | debug_build | debug_rebuild]" )
         sys.exit()
 
     command = ''
