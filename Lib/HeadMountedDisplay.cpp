@@ -52,7 +52,11 @@ void HeadMountedDisplay::createDebug( ovrHmdType type )
 
 void HeadMountedDisplay::destroy()
 {
-    ovrHmd_Destroy( m_handler );
+    if ( m_handler )
+    {
+        ovrHmd_Destroy( m_handler );
+        m_handler = 0;
+    }
 }
 
 std::string HeadMountedDisplay::lastError()

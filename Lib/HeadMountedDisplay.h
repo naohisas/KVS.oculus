@@ -29,6 +29,12 @@ public:
     std::string manufacturer() const { return std::string( m_handler->Manufacturer ); }
     kvs::Int16 vendorId() const { return m_handler->VendorId; }
     kvs::Int16 productId() const { return m_handler->ProductId; }
+    kvs::UInt32 hmdCaps() const { return m_handler->HmdCaps; }
+    kvs::UInt32 trackingCaps() const { return m_handler->TrackingCaps; }
+    kvs::UInt32 distortionCaps() const { return m_handler->DistortionCaps; }
+    ovrFovPort defaultEyeFov( const size_t index ) const { return m_handler->DefaultEyeFov[index]; }
+    ovrFovPort maxEyeFov( const size_t index ) const { return m_handler->MaxEyeFov[index]; }
+    ovrEyeType eyeRenderOrder( const size_t index ) const { return m_handler->EyeRenderOrder[index]; }
     ovrSizei resolution() const { return m_handler->Resolution; }
     ovrVector2i windowPosition() const { return m_handler->WindowsPos; }
 

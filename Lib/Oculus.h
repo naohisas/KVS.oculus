@@ -2,7 +2,9 @@
 
 #include <string>
 #include <OVR_CAPI.h>
+#include <OVR_CAPI_GL.h>
 #include <OVR_Version.h>
+#include <Extras/OVR_Math.h>
 #include "OVR.h"
 
 
