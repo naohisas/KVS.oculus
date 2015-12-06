@@ -1,6 +1,7 @@
 #pragma once
-#include <kvs/glut/ScreenBase>
+#include <kvs/glut/Screen>
 #include <kvs/FrameBufferObject>
+#include "Application.h"
 #include "HeadMountedDisplay.h"
 
 
@@ -10,7 +11,7 @@ namespace kvs
 namespace oculus
 {
 
-class Screen : public kvs::glut::ScreenBase
+class Screen : public kvs::glut::Screen
 {
 private:
     kvs::oculus::HeadMountedDisplay m_hmd;
@@ -23,19 +24,12 @@ private:
     ovrEyeRenderDesc m_desc[2];
 
 public:
-    Screen();
+    Screen( kvs::oculus::Application* app = 0 );
     virtual ~Screen();
 
     virtual void initializeEvent();
-    virtual void paintEvent();
-    virtual void resizeEvent( int width, int height );
-    virtual void mousePressEvent( kvs::MouseEvent* event );
-    virtual void mouseMoveEvent( kvs::MouseEvent* event );
-    virtual void mouseReleaseEvent( kvs::MouseEvent* event );
-    virtual void mouseDoubleClickEvent( kvs::MouseEvent* event );
-    virtual void wheelEvent( kvs::WheelEvent* event );
-    virtual void keyPressEvent( kvs::KeyEvent* event );
-    virtual void idleMouseEvent();
+    virtual void defaultPaintEvent();
+    virtual void defaultResizeEvent( int width, int height );
 };
 
 } // end of namespace oculus

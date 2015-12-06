@@ -1,5 +1,5 @@
 #pragma once
-#include <kvs/ApplicationBase>
+#include <kvs/glut/Application>
 
 
 namespace kvs
@@ -8,7 +8,7 @@ namespace kvs
 namespace oculus
 {
 
-class Application : public kvs::ApplicationBase
+class Application : public kvs::glut::Application
 {
 public:
     Application( int argc, char** argv );

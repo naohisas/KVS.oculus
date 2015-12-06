@@ -8,7 +8,7 @@ namespace oculus
 {
 
 Application::Application( int argc, char** argv ):
-    kvs::ApplicationBase( argc, argv )
+    kvs::glut::Application( argc, argv )
 {
     static bool flag = true;
     if ( flag )
@@ -20,12 +20,14 @@ Application::Application( int argc, char** argv ):
 
 int Application::run()
 {
-    return true;
+//    return true;
+    return kvs::glut::Application::run();
 }
 
 void Application::quit()
 {
     kvs::oculus::Shutdown();
+    kvs::glut::Application::quit();
 }
 
 } // end of namespace oculus

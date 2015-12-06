@@ -8,23 +8,26 @@ namespace kvs
 namespace oculus
 {
 
-Screen::Screen() : kvs::glut::ScreenBase( NULL )
+Screen::Screen( kvs::oculus::Application* app ) : kvs::glut::Screen( app )
 {
     static bool flag = true;
     if ( flag )
     {
         flag = false;
         m_hmd.create();
+        if ( !m_hmd.handler() ) { m_hmd.createDebug( ovrHmd_DK2 ); }
     }
 }
 
 Screen::~Screen()
 {
-    m_hmd.destroy();
+   m_hmd.destroy();
 }
 
 void Screen::initializeEvent()
 {
+    kvs::glut::Screen::initializeEvent();
+
     const ovrEyeType eye0 = ovrEye_Left;
     const ovrFovPort fov0 = m_hmd.defaultEyeFov(0);
     const ovrSizei tex0 = m_hmd.fovTextureSize( eye0, fov0, 1.0f );
@@ -100,40 +103,14 @@ void Screen::initializeEvent()
     }
 }
 
-void Screen::paintEvent()
+void Screen::defaultPaintEvent()
 {
+//    kvs::glut::Screen::defaultPaintEvent();
 }
 
-void Screen::resizeEvent( int width, int height )
+void Screen::defaultResizeEvent( int width, int height )
 {
-}
-
-void Screen::mousePressEvent( kvs::MouseEvent* event )
-{
-}
-
-void Screen::mouseMoveEvent( kvs::MouseEvent* event )
-{
-}
-
-void Screen::mouseReleaseEvent( kvs::MouseEvent* event )
-{
-}
-
-void Screen::mouseDoubleClickEvent( kvs::MouseEvent* event )
-{
-}
-
-void Screen::wheelEvent( kvs::WheelEvent* event )
-{
-}
-
-void Screen::keyPressEvent( kvs::KeyEvent* event )
-{
-}
-
-void Screen::idleMouseEvent()
-{
+//    kvs::glut::Screen::defaultResizeEvent( width, height );
 }
 
 } // end of namespace oculus

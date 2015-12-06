@@ -1,11 +1,19 @@
+#include <kvs/OpenGL>
 #include <Lib/Oculus.h>
 #include <Lib/HeadMountedDisplay.h>
 #include <Lib/Application.h>
+#include <Lib/Screen.h>
 #include <iostream>
 
 
 int main( int argc, char** argv )
 {
+    kvs::oculus::Application app( argc, argv );
+    kvs::oculus::Screen screen( &app );
+    screen.show();
+
+    return app.run();
+/*
     std::cout << "Description: " << kvs::oculus::Description() << std::endl;
     std::cout << "Version: " << kvs::oculus::Version() << std::endl;
 
@@ -27,4 +35,5 @@ int main( int argc, char** argv )
     app.quit();
 
     return 0;
+*/
 }
