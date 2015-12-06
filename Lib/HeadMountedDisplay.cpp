@@ -123,6 +123,18 @@ bool HeadMountedDisplay::configureRendering(
     return ret == ovrTrue;
 }
 
+ovrFrameTiming HeadMountedDisplay::beginFrame( kvs::UInt32 index )
+{
+    ovrFrameTiming ret;
+    KVS_OVR_CALL( ret = ovrHmd_BeginFrame( m_handler, index ) );
+    return ret;
+}
+
+void HeadMountedDisplay::endFrame( const ovrPosef pose[2], const ovrTexture texture[2] )
+{
+    KVS_OVR_CALL( ovrHmd_EndFrame( m_handler, pose, texture ) );
+}
+
 void HeadMountedDisplay::getEyePoses( kvs::UInt32 index, const ovrVector3f offset[2], ovrPosef poses[2], ovrTrackingState* state )
 {
     KVS_OVR_CALL( ovrHmd_GetEyePoses( m_handler, index, offset, poses, state ) );

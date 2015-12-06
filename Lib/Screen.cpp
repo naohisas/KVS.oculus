@@ -1,5 +1,7 @@
 #include "Screen.h"
+#include <kvs/OpenGL>
 #include <kvs/Platform>
+#include <kvs/Background>
 
 
 namespace kvs
@@ -106,6 +108,22 @@ void Screen::initializeEvent()
 void Screen::defaultPaintEvent()
 {
 //    kvs::glut::Screen::defaultPaintEvent();
+    kvs::OpenGL::WithPushedMatrix p( GL_MODELVIEW );
+    p.loadIdentity();
+    {
+        m_hmd.beginFrame( 0 );
+
+        ovrPosef eye_pose[2];
+        const size_t neyes = ovrEye_Count;
+        for ( size_t i = 0; i < neyes; i++ )
+        {
+            ovrEyeType eye = m_hmd.eyeRenderOrder( i );
+            eye_pose[i] = m_hmd.posePerEye( eye );
+        }
+
+        m_hmd.endFrame( eye_pose, &m_texture[0].Texture );
+    }
+    kvs::OpenGL::Flush();
 }
 
 void Screen::defaultResizeEvent( int width, int height )

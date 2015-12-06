@@ -57,7 +57,7 @@ public:
 
     // SDK distortion rendering methods
     bool configureRendering( const ovrRenderAPIConfig* conf, kvs::UInt32 caps, const ovrFovPort fov[2], ovrEyeRenderDesc desc[2] );
-    ovrFrameTiming beginFrame( kvs::UInt32 index );
+    ovrFrameTiming beginFrame( kvs::UInt32 index = 0 );
     void endFrame( const ovrPosef pose[2], const ovrTexture texture[2] );
     void getEyePoses( kvs::UInt32 index, const ovrVector3f offset[2], ovrPosef poses[2], ovrTrackingState* state );
     ovrPosef posePerEye( ovrEyeType eye );
