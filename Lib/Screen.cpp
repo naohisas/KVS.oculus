@@ -2,6 +2,7 @@
 #include <kvs/OpenGL>
 #include <kvs/Platform>
 #include <kvs/Background>
+#include <kvs/Camera>
 
 
 namespace kvs
@@ -17,8 +18,11 @@ Screen::Screen( kvs::oculus::Application* app ) : kvs::glut::Screen( app )
     {
         flag = false;
         m_hmd.create();
-        if ( !m_hmd.handler() ) { m_hmd.createDebug( ovrHmd_DK2 ); }
+        if ( !m_hmd.handler() ) { m_hmd.createDebug( ovrHmd_DK1 ); }
+        setSize( m_hmd.resolution().w, m_hmd.resolution().h );
     }
+
+    scene()->camera()->setProjectionTypeToFrustum();
 }
 
 Screen::~Screen()
@@ -105,30 +109,39 @@ void Screen::initializeEvent()
     }
 }
 
-void Screen::defaultPaintEvent()
+void Screen::paintEvent()
 {
-//    kvs::glut::Screen::defaultPaintEvent();
     kvs::OpenGL::WithPushedMatrix p( GL_MODELVIEW );
     p.loadIdentity();
     {
         m_hmd.beginFrame( 0 );
+        m_framebuffer.bind();
+
+        scene()->background()->apply();
+        scene()->updateGLLightParameters();
 
         ovrPosef eye_pose[2];
         const size_t neyes = ovrEye_Count;
         for ( size_t i = 0; i < neyes; i++ )
         {
-            ovrEyeType eye = m_hmd.eyeRenderOrder( i );
+            const ovrEyeType eye = m_hmd.eyeRenderOrder( i );
             eye_pose[i] = m_hmd.posePerEye( eye );
+
+            const float front = scene()->camera()->front();
+            scene()->camera()->setTop( m_desc[i].Fov.UpTan * front );
+            scene()->camera()->setBottom( -m_desc[i].Fov.DownTan * front );
+            scene()->camera()->setLeft( -m_desc[i].Fov.LeftTan * front );
+            scene()->camera()->setRight( m_desc[i].Fov.RightTan * front );
+
+            const ovrVector2i pos = m_viewport[i].Pos;
+            const ovrSizei size = m_viewport[i].Size;
+            kvs::OpenGL::SetViewport( pos.x, pos.y, size.w, size.h );
         }
 
+        m_framebuffer.unbind();
         m_hmd.endFrame( eye_pose, &m_texture[0].Texture );
     }
     kvs::OpenGL::Flush();
-}
-
-void Screen::defaultResizeEvent( int width, int height )
-{
-//    kvs::glut::Screen::defaultResizeEvent( width, height );
 }
 
 } // end of namespace oculus

@@ -28,8 +28,7 @@ public:
     virtual ~Screen();
 
     virtual void initializeEvent();
-    virtual void defaultPaintEvent();
-    virtual void defaultResizeEvent( int width, int height );
+    virtual void paintEvent();
 };
 
 } // end of namespace oculus
