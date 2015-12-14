@@ -5,12 +5,29 @@
 #include <Lib/Screen.h>
 #include <iostream>
 
+#include <kvs/StructuredVolumeObject>
+#include <kvs/PolygonObject>
+#include <kvs/Isosurface>
+#include <kvs/HydrogenVolumeData>
+#include <kvs/Bounds>
+
 
 int main( int argc, char** argv )
 {
     kvs::oculus::Application app( argc, argv );
     kvs::oculus::Screen screen( &app );
     screen.show();
+
+    kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
+    const double i = kvs::Math::Mix( volume->minValue(), volume->maxValue(), 0.2 );
+    const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
+    const bool d = false;
+    const kvs::TransferFunction t( 256 );
+    kvs::PolygonObject* object = new kvs::Isosurface( volume, i, n, d, t );
+    delete volume;
+
+    screen.registerObject( object );
+    screen.registerObject( object, new kvs::Bounds() );
 
     return app.run();
 /*

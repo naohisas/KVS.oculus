@@ -3,6 +3,10 @@
 #include <kvs/Platform>
 #include <kvs/Background>
 #include <kvs/Camera>
+#include <kvs/ObjectManager>
+#include <kvs/RendererManager>
+#include <kvs/IDManager>
+#include <kvs/RendererBase>
 
 
 namespace kvs
@@ -133,9 +137,34 @@ void Screen::paintEvent()
             scene()->camera()->setLeft( -m_desc[i].Fov.LeftTan * front );
             scene()->camera()->setRight( m_desc[i].Fov.RightTan * front );
 
+            scene()->updateGLProjectionMatrix();
+            scene()->updateGLViewingMatrix();
+
             const ovrVector2i pos = m_viewport[i].Pos;
             const ovrSizei size = m_viewport[i].Size;
             kvs::OpenGL::SetViewport( pos.x, pos.y, size.w, size.h );
+
+            if ( scene()->objectManager()->hasObject() )
+            {
+                const int size = scene()->IDManager()->size();
+                for ( int index = 0; index < size; index++ )
+                {
+                    kvs::IDManager::IDPair id = scene()->IDManager()->id( index );
+                    kvs::ObjectBase* object = scene()->objectManager()->object( id.first );
+                    kvs::RendererBase* renderer = scene()->rendererManager()->renderer( id.second );
+                    if ( object->isShown() )
+                    {
+                        kvs::OpenGL::PushMatrix();
+                        scene()->updateGLModelingMatrix( object );
+                        renderer->exec( object, scene()->camera(), scene()->light() );
+                        kvs::OpenGL::PopMatrix();
+                    }
+                }
+            }
+            else
+            {
+                scene()->updateGLModelingMatrix();
+            }
         }
 
         m_framebuffer.unbind();
