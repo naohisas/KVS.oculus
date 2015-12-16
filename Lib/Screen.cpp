@@ -9,6 +9,47 @@
 #include <kvs/RendererBase>
 
 
+namespace
+{
+
+inline kvs::Vec3 ToVec3( const OVR::Vector3f& v )
+{
+    return kvs::Vec3( v.x, v.y, v.z );
+}
+
+inline OVR::Vector3f ToVec3( const kvs::Vec3& v )
+{
+    return OVR::Vector3f( v.x(), v.y(), v.z() );
+}
+
+inline kvs::Mat4 ToMat4( const OVR::Matrix4f& m )
+{
+    return kvs::Mat4(
+        m.M[0][0], m.M[0][1], m.M[0][2], m.M[0][3],
+        m.M[1][0], m.M[1][1], m.M[1][2], m.M[1][3],
+        m.M[2][0], m.M[2][1], m.M[2][2], m.M[2][3],
+        m.M[3][0], m.M[3][1], m.M[3][2], m.M[3][3] );
+}
+
+inline OVR::Matrix4f ToMat4( const kvs::Mat3& m )
+{
+    return OVR::Matrix4f(
+        m[0][0], m[0][1], m[0][2],
+        m[1][0], m[1][1], m[1][2],
+        m[2][0], m[2][1], m[2][2] );
+}
+
+inline OVR::Matrix4f ToMat4( const kvs::Mat4& m )
+{
+    return OVR::Matrix4f(
+        m[0][0], m[0][1], m[0][2], m[0][3],
+        m[1][0], m[1][1], m[1][2], m[1][3],
+        m[2][0], m[2][1], m[2][2], m[2][3],
+        m[3][0], m[3][1], m[3][2], m[3][3] );
+}
+
+}
+
 namespace kvs
 {
 
@@ -115,6 +156,8 @@ void Screen::initializeEvent()
 
 void Screen::paintEvent()
 {
+    ovrTrackingState ts = m_hmd.trackingState( ovr_GetTimeInSeconds() );
+
     kvs::OpenGL::WithPushedMatrix p( GL_MODELVIEW );
     p.loadIdentity();
     {
@@ -124,6 +167,15 @@ void Screen::paintEvent()
         scene()->background()->apply();
         scene()->updateGLLightParameters();
 
+        const kvs::Vec3 camera_position = scene()->camera()->position();
+        const kvs::Vec3 camera_lookat = scene()->camera()->lookAt();
+        const kvs::Vec3 camera_upvector = scene()->camera()->upVector();
+
+        const OVR::Vector3f position0 = ::ToVec3( camera_position );
+        const OVR::Vector3f lookat0 = ::ToVec3( camera_lookat );
+        const OVR::Vector3f upvector0 = ::ToVec3( camera_upvector );
+        const OVR::Matrix4f rotation0 = ::ToMat4( scene()->camera()->xform().rotation() );
+
         ovrPosef eye_pose[2];
         const size_t neyes = ovrEye_Count;
         for ( size_t i = 0; i < neyes; i++ )
@@ -131,19 +183,31 @@ void Screen::paintEvent()
             const ovrEyeType eye = m_hmd.eyeRenderOrder( i );
             eye_pose[i] = m_hmd.posePerEye( eye );
 
+            // Setup the viewport.
+            const ovrVector2i pos = m_viewport[i].Pos;
+            const ovrSizei size = m_viewport[i].Size;
+            kvs::OpenGL::SetViewport( pos.x, pos.y, size.w, size.h );
+
+            // Setup the projection matrix.
             const float front = scene()->camera()->front();
             scene()->camera()->setTop( m_desc[i].Fov.UpTan * front );
             scene()->camera()->setBottom( -m_desc[i].Fov.DownTan * front );
             scene()->camera()->setLeft( -m_desc[i].Fov.LeftTan * front );
             scene()->camera()->setRight( m_desc[i].Fov.RightTan * front );
-
             scene()->updateGLProjectionMatrix();
+
+            // Setup the viewing matrix.
+            OVR::Matrix4f R0 = rotation0;
+            OVR::Matrix4f R = R0 * OVR::Matrix4f( ts.HeadPose.ThePose.Orientation );
+            OVR::Vector3f T = R0.Transform( ts.HeadPose.ThePose.Position );
+            OVR::Vector3f upvector = R.Transform( upvector0 );
+            OVR::Vector3f forward = R.Transform( lookat0 - position0 );
+            OVR::Vector3f position = position0 + T + R.Transform( eye_pose[i].Position );
+            OVR::Vector3f lookat = position + forward;
+            scene()->camera()->setPosition( ::ToVec3( position ), ::ToVec3( lookat ), ::ToVec3( upvector ) );
             scene()->updateGLViewingMatrix();
 
-            const ovrVector2i pos = m_viewport[i].Pos;
-            const ovrSizei size = m_viewport[i].Size;
-            kvs::OpenGL::SetViewport( pos.x, pos.y, size.w, size.h );
-
+            // Setup the modeling matrix and render the objects.
             if ( scene()->objectManager()->hasObject() )
             {
                 const int size = scene()->IDManager()->size();
@@ -166,6 +230,8 @@ void Screen::paintEvent()
                 scene()->updateGLModelingMatrix();
             }
         }
+
+        scene()->camera()->setPosition( camera_position, camera_lookat, camera_upvector );
 
         m_framebuffer.unbind();
         m_hmd.endFrame( eye_pose, &m_texture[0].Texture );

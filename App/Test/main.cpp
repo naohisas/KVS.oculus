@@ -11,7 +11,6 @@
 #include <kvs/HydrogenVolumeData>
 #include <kvs/Bounds>
 
-
 int main( int argc, char** argv )
 {
     kvs::oculus::Application app( argc, argv );
