@@ -62,8 +62,7 @@ Screen::Screen( kvs::oculus::Application* app ) : kvs::glut::Screen( app )
     if ( flag )
     {
         flag = false;
-        m_hmd.create();
-        if ( !m_hmd.handler() ) { m_hmd.createDebug( ovrHmd_DK1 ); }
+        if ( !m_hmd.create() ) { m_hmd.createDebug( ovrHmd_DK1 ); }
         setSize( m_hmd.resolution().w, m_hmd.resolution().h );
     }
 
@@ -83,9 +82,27 @@ void Screen::initializeEvent()
     const ovrFovPort fov0 = m_hmd.defaultEyeFov(0);
     const ovrSizei tex0 = m_hmd.fovTextureSize( eye0, fov0, 1.0f );
 
+//    std::cout << "fov0.UpTan = " << fov0.UpTan << std::endl;
+//    std::cout << "fov0.DownTan = " << fov0.DownTan << std::endl;
+//    std::cout << "fov0.LeftTan = " << fov0.LeftTan << std::endl;
+//    std::cout << "fov0.RightTan = " << fov0.RightTan << std::endl;
+//    std::cout << std::endl;
+//    std::cout << "tex0.w = " << tex0.w << std::endl;
+//    std::cout << "tex0.h = " << tex0.h << std::endl;
+//    std::cout << std::endl;
+
     const ovrEyeType eye1 = ovrEye_Right;
     const ovrFovPort fov1 = m_hmd.defaultEyeFov(1);
     const ovrSizei tex1 = m_hmd.fovTextureSize( eye1, fov1, 1.0f );
+
+//    std::cout << "fov1.UpTan = " << fov1.UpTan << std::endl;
+//    std::cout << "fov1.DownTan = " << fov1.DownTan << std::endl;
+//    std::cout << "fov1.LeftTan = " << fov1.LeftTan << std::endl;
+//    std::cout << "fov1.RightTan = " << fov1.RightTan << std::endl;
+//    std::cout << std::endl;
+//    std::cout << "tex1.w = " << tex1.w << std::endl;
+//    std::cout << "tex1.h = " << tex1.h << std::endl;
+//    std::cout << std::endl;
 
     ovrSizei target_size;
     target_size.w = tex0.w + tex1.w;
@@ -180,6 +197,9 @@ void Screen::paintEvent()
         const size_t neyes = ovrEye_Count;
         for ( size_t i = 0; i < neyes; i++ )
         {
+//            std::cout << "eye_pose[" << i << "]" << std::endl;
+//            std::cout << std::endl;
+
             const ovrEyeType eye = m_hmd.eyeRenderOrder( i );
             eye_pose[i] = m_hmd.posePerEye( eye );
 
@@ -188,8 +208,21 @@ void Screen::paintEvent()
             const ovrSizei size = m_viewport[i].Size;
             kvs::OpenGL::SetViewport( pos.x, pos.y, size.w, size.h );
 
+//            std::cout << "pos.x = " << pos.x << std::endl;
+//            std::cout << "pos.y = " << pos.y << std::endl;
+//            std::cout << "size.w = " << size.w << std::endl;
+//            std::cout << "size.h = " << size.h << std::endl;
+//            std::cout << std::endl;
+
             // Setup the projection matrix.
             const float front = scene()->camera()->front();
+
+//            std::cout << "front = " << front << std::endl;
+//            std::cout << "Fov.UpTan = " << m_desc[i].Fov.UpTan << std::endl;
+//            std::cout << "Fov.DownTan = " << -m_desc[i].Fov.DownTan << std::endl;
+//            std::cout << "Fov.LeftTan = " << -m_desc[i].Fov.LeftTan << std::endl;
+//            std::cout << "Fov.RightTan = " << m_desc[i].Fov.RightTan << std::endl;
+
             scene()->camera()->setTop( m_desc[i].Fov.UpTan * front );
             scene()->camera()->setBottom( -m_desc[i].Fov.DownTan * front );
             scene()->camera()->setLeft( -m_desc[i].Fov.LeftTan * front );

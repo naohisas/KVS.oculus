@@ -5,19 +5,17 @@
 #include <Lib/Screen.h>
 #include <iostream>
 
+#include <kvs/HydrogenVolumeData>
+
 #include <kvs/StructuredVolumeObject>
 #include <kvs/PolygonObject>
 #include <kvs/Isosurface>
-#include <kvs/HydrogenVolumeData>
 #include <kvs/Bounds>
 
-int main( int argc, char** argv )
+void Isosurface( kvs::glut::Screen& screen )
 {
-    kvs::oculus::Application app( argc, argv );
-    kvs::oculus::Screen screen( &app );
-    screen.show();
-
     kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
+
     const double i = kvs::Math::Mix( volume->minValue(), volume->maxValue(), 0.2 );
     const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
     const bool d = false;
@@ -25,8 +23,33 @@ int main( int argc, char** argv )
     kvs::PolygonObject* object = new kvs::Isosurface( volume, i, n, d, t );
     delete volume;
 
-    screen.registerObject( object );
     screen.registerObject( object, new kvs::Bounds() );
+    screen.registerObject( object );
+}
+
+#include <kvs/RayCastingRenderer>
+
+void VolumeRendering( kvs::glut::Screen& screen )
+{
+    kvs::StructuredVolumeObject* object = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
+
+//    kvs::glsl::RayCastingRenderer* renderer = new kvs::glsl::RayCastingRenderer();
+    kvs::RayCastingRenderer* renderer = new kvs::RayCastingRenderer();
+
+    screen.registerObject( object, new kvs::Bounds() );
+    screen.registerObject( object, renderer );
+}
+
+int main( int argc, char** argv )
+{
+    kvs::oculus::Application app( argc, argv );
+    kvs::oculus::Screen screen( &app );
+    screen.show();
+
+//    Isosurface( screen );
+    VolumeRendering( screen );
+
+//    screen.show();
 
     return app.run();
 /*

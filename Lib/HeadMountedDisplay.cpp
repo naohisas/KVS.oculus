@@ -40,14 +40,14 @@ HeadMountedDisplay::HeadMountedDisplay():
 {
 }
 
-void HeadMountedDisplay::create( int index )
+bool HeadMountedDisplay::create( int index )
 {
-    m_handler = ovrHmd_Create( index );
+    return ( m_handler = ovrHmd_Create( index ) ) != NULL;
 }
 
-void HeadMountedDisplay::createDebug( ovrHmdType type )
+bool HeadMountedDisplay::createDebug( ovrHmdType type )
 {
-    m_handler = ovrHmd_CreateDebug( type );
+    return ( m_handler = ovrHmd_CreateDebug( type ) ) != NULL;
 }
 
 void HeadMountedDisplay::destroy()

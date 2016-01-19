@@ -38,8 +38,8 @@ public:
     ovrSizei resolution() const { return m_handler->Resolution; }
     ovrVector2i windowPosition() const { return m_handler->WindowsPos; }
 
-    void create( int index = 0 );
-    void createDebug( ovrHmdType type = ovrHmd_DK1 );
+    bool create( int index = 0 );
+    bool createDebug( ovrHmdType type = ovrHmd_DK1 );
     void destroy();
     std::string lastError();
 
