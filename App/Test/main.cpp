@@ -46,8 +46,8 @@ int main( int argc, char** argv )
     kvs::oculus::Screen screen( &app );
     screen.show();
 
-//    Isosurface( screen );
-    VolumeRendering( screen );
+    Isosurface( screen );
+//    VolumeRendering( screen );
 
 //    screen.show();
 

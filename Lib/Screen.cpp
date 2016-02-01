@@ -147,7 +147,7 @@ void Screen::initializeEvent()
 
     if ( !( m_hmd.hmdCaps() & ovrHmdCap_ExtendDesktop ) )
     {
-        ovrHmd_AttachToWindow( m_hmd, wnd, NULL, NULL );
+        ovrHmd_AttachToWindow( m_hmd.handler(), wnd, NULL, NULL );
     }
 
     config.OGL.Window = wnd;
