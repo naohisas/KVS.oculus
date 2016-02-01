@@ -30,3 +30,4 @@
 *.kvs
 
 App/Test/Test
+Lib/kvsmake.py~
