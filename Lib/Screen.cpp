@@ -169,6 +169,7 @@ void Screen::initializeEvent()
     {
         kvsMessageError("Failed tracking configuration");
     }
+    ovrHmd_DismissHSWDisplay(m_hmd.handler());
 }
 
 void Screen::paintEvent()

@@ -16,7 +16,7 @@
 int main( int argc, char** argv )
 {
     kvs::oculus::Application app( argc, argv );
-   
+    
     /* Read volume data from the specified data file. If the data file is not
      * specified, scalar hydrogen volume data is created by using
      * kvs::HydrogenVolumeData class.
@@ -54,7 +54,6 @@ int main( int argc, char** argv )
     renderer->enableShading();
     
     kvs::oculus::Screen screen( &app );
-   
     screen.registerObject( object, renderer);
     screen.show();
     
