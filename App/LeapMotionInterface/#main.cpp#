@@ -85,8 +85,7 @@ public:
 	const float p = m_volume->resolution().z() * handCenter.y / 100;
 
 	/*
-	// Get the hand's normal vector and direction                                                                                          
-	  const Leap::Vector normal = hand.palmNormal();  
+	// Get the hand's normal vector and direction                                                                                                                                                                                                                    
 	    float pitchInRadians = normal.pitch();
 	*/
 	const kvs::OrthoSlice::AlignedAxis a = kvs::OrthoSlice::ZAxis;
@@ -239,7 +238,7 @@ int main( int argc, char** argv )
      *    t: transfer function
      */
     volume->updateMinMaxValues();
-    const double i = ( volume->maxValue() + volume->minValue() ) * 0.5;
+    const double i = ( volume->maxValue() + volume->minValue() ) * 0.1;
     const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
     const bool d = false;
     const kvs::TransferFunction t( 256 );
