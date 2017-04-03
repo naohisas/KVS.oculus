@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include <kvs/HydrogenVolumeData>
-
 #include <kvs/StructuredVolumeObject>
 #include <kvs/PolygonObject>
 #include <kvs/Isosurface>
@@ -14,8 +13,12 @@
 
 void Isosurface( kvs::glut::Screen& screen )
 {
-    kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
+  kvs::StructuredVolumeObject* volume = NULL;
 
+      volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
+
+
+    
     const double i = kvs::Math::Mix( volume->minValue(), volume->maxValue(), 0.2 );
     const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
     const bool d = false;
@@ -32,7 +35,7 @@ void Isosurface( kvs::glut::Screen& screen )
 void VolumeRendering( kvs::glut::Screen& screen )
 {
     kvs::StructuredVolumeObject* object = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
-
+    kvs::StructuredVolumeObject* m_volume = new kvs::StructuredVectorToScalar(volume);
 //    kvs::glsl::RayCastingRenderer* renderer = new kvs::glsl::RayCastingRenderer();
     kvs::RayCastingRenderer* renderer = new kvs::RayCastingRenderer();
 
@@ -45,6 +48,7 @@ int main( int argc, char** argv )
     kvs::oculus::Application app( argc, argv );
     kvs::oculus::Screen screen( &app );
     screen.show();
+    
 
     Isosurface( screen );
 //    VolumeRendering( screen );

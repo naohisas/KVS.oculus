@@ -1,28 +1,41 @@
-/*****************************************************************************/
-/**
- *  @file   main.cpp
- *  @brief  Example program for kvs::Isosurface class.
- *  @author Naohisa Sakamoto
- */
-/*----------------------------------------------------------------------------
- *
- *  Copyright (c) Visualization Laboratory, Kyoto University.
- *  All rights reserved.
- *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
- *
- *  $Id: main.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
- */
-/*****************************************************************************/
+#include <kvs/OpenGL>
+#include <Lib/Oculus.h>
+#include <Lib/HeadMountedDisplay.h>
+#include <Lib/Application.h>
+#include <Lib/Screen.h>
+#include <iostream>
+#include <kvs/Coordinate>
+#include <chrono> 
+
 #include <kvs/Message>
 #include <kvs/StructuredVolumeObject>
 #include <kvs/StructuredVolumeImporter>
+#include <kvs/StructuredVectorToScalar>
 #include <kvs/PolygonObject>
+#include <kvs/PolygonRenderer>
 #include <kvs/Isosurface>
-#include <kvs/OrthoSlice>
+#include <kvs/SlicePlane>
 #include <kvs/HydrogenVolumeData>
-#include <kvs/glut/Application>
-#include <kvs/glut/Screen>
+//#include <kvs/glut/Application>
+//#include <kvs/glut/Screen>
+#include <kvs/Streamline>
 #include <Leap.h>
+#include <unistd.h>
+#include <kvs/Bounds>
+#include <kvs/StylizedLineRenderer>
+
+void Scale( kvs::StructuredVolumeObject* volume, float scale )
+{
+  kvs::ValueArray<float> values = volume->values().asValueArray<float>();
+  size_t nvalues = values.size();
+  for ( size_t i = 0; i < nvalues; i++ )
+    {
+      values[i] *= scale;
+    }
+
+  volume->setValues( values );
+  volume->updateMinMaxValues();
+}
 
 
 const std::string fingerNames[] = {"Thumb", "Index", "Middle", "Ring", "Pinky"};
@@ -47,19 +60,139 @@ public:
   void  onConnect(const Leap::Controller& controller)
   {
     std::cout << "Connected" << std::endl;
-    /*   controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
-    controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
-    controller.enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
-    controller.enableGesture(Leap::Gesture::TYPE_SWIPE);
-    */
-  }
 
+  }
+  
+  /*  static double GetTime() {
+    const std::chrono::time_point<T> end = T::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - epoch()).count() * 1e-9;
+  }
+  */
+    kvs::Vec3 leap_to_World(Leap::Vector leapPoint)
+    {
+        
+        kvs::Vec3 v = toVec3(leapPoint);
+        
+        /*
+         v += kvs::Vec3(-3.0, -3.0, -3.0 );
+         kvs::Vec4 v_t1 = kvs::Vec4(v,1);
+         v_t1 = v_t1 * kvs::Mat4(6, 0, 0, 0,
+         0, 6, 0, 0,
+         0, 0, 6, 0,
+         0, 0, 0, 1
+         );
+         v = v_t1.xyz();
+         */
+        kvs::oculus::HeadMountedDisplay hmd;
+        //std::cout <<"hmd  "<<hmd.productName()<<std::endl;
+        //  ovrHmd  m_handler = hmd.handler();
+        
+        double time = kvs::oculus::TimeInSecond();
+        ovrTrackingState state = hmd.trackingState( time );
+        ovrPosef headPose = state.HeadPose.ThePose;
+        
+        kvs::Mat4 M_ow = kvs::Mat4::Identity();
+        kvs::Quaternion orientation(headPose.Orientation.x, headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
+        orientation.toMatrix(M_ow);
+        kvs::Mat4 M_lo(-1, 0, 0, 0,
+                       0, 0, -1, 0,
+                       0, -1, 0, -0.08,
+                       0, 0, 0, 1
+                       );
+        
+        
+        kvs::Mat4 M(-1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, -1, 0,
+                    0, 0, 0, 1
+                    );
+        /*
+         kvs::Mat4 M(0.01, 0, 0, 0,
+         0, 0.01, 0, 0,
+         0, 0, 0.01, 0,
+         0, 0, 0, 1
+         );
+         */
+        
+        kvs::Mat4 M_lw = M_ow* M_lo;
+        kvs::Vec4 v_t = kvs::Vec4(v,1);
+        v_t = M_lw* M* v_t;
+        v = v_t.xyz();
+        return v;
+        
+    }
+  kvs::Vec3 leap_to_World(Leap::Vector leapPoint, Leap::InteractionBox iBox ) 
+  {
+    
+    std::cout<<leapPoint.x<<" "<<leapPoint.y<<" "<<leapPoint.z<<std::endl;
+    kvs::Vec3 v = toVec3(leapPoint);
+    std::cout<<"before"<<std::endl;
+    v.print();
+    Leap::Vector normalized  = iBox.normalizePoint(leapPoint);
+    std::cout<<"after"<<std::endl;
+    std::cout<<normalized.x<<" "<<normalized.y<<" "<<normalized.z<<std::endl;
+    v = toVec3(normalized);
+    v += ( m_volume->maxObjectCoord() + m_volume->minObjectCoord() ) * 0.5f ;
+    kvs::Vec4 v_t1 = kvs::Vec4(v,1)*31.5f;
+        
+    v = v_t1.xyz();
+   
+    kvs::oculus::HeadMountedDisplay hmd;
+    //std::cout <<"hmd  "<<hmd.productName()<<std::endl;
+    //  ovrHmd  m_handler = hmd.handler();
+    
+    double time = kvs::oculus::TimeInSecond();
+    ovrTrackingState state = hmd.trackingState( time );
+    ovrPosef headPose = state.HeadPose.ThePose;
+    
+    kvs::Mat4 M_ow = kvs::Mat4::Identity();
+    kvs::Quaternion orientation(headPose.Orientation.x, headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
+    orientation.toMatrix(M_ow);
+    kvs::Mat4 M_lo(-1, 0, 0, 0,
+		   0, 0, -1, 0,
+		   0, -1, 0, -0.08,
+		   0, 0, 0, 1
+		   );
+    
+    
+    kvs::Mat4 M(-1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, -1, 0,
+		0, 0, 0, 1
+		);
+		/*
+      kvs::Mat4 M(0.01, 0, 0, 0,
+      0, 0.01, 0, 0,
+      0, 0, 0.01, 0,
+      0, 0, 0, 1
+      );
+		*/
+    
+    kvs::Mat4 M_lw = M_ow* M_lo;
+    kvs::Vec4 v_t = kvs::Vec4(v,1);
+    v_t = M_lw* M* v_t;
+    v = v_t.xyz();
+    return v;
+    
+  }
+  kvs::Vec3 toVec3(Leap::Vector& v)
+  {
+    return kvs::Vec3(v.x, v.y, v.z);
+  }
   void onFrame( const Leap::Controller& controller )
   {
     const Leap::Frame frame = controller.frame();
     std::cout << "Frame id:" << frame.id() << std::endl;
     
-   
+    //InteractionBox
+    Leap::InteractionBox iBox = frame.interactionBox();    
+    
+    Leap::ImageList images = frame.images();
+    for(int i = 0; i < 2; i++){
+      Leap::Image image = images[i];
+
+      const unsigned char* image_buffer = image.data();
+    }
     Leap::HandList hands = frame.hands();
     for ( Leap::HandList::const_iterator hl = hands.begin(); hl != hands.end(); ++hl )
       {
@@ -78,131 +211,49 @@ public:
 	    m_screen.scene()->object("Iso")->show();
 	    
 	  }
-	bool isosurface_mode = true;
-	if( isosurface_mode ){
-	Leap::Vector handCenter = hand.palmPosition();
-	std::cout << "Right center:" << handCenter.y << std::endl;
-	const float p = m_volume->resolution().z() * handCenter.y / 100;
+	bool slice_plane_mode = true;
+	if( slice_plane_mode ){
 
-	/*
-	// Get the hand's normal vector and direction                                                                                          
-	  const Leap::Vector normal = hand.palmNormal();  
-	    float pitchInRadians = normal.pitch();
-	*/
-	const kvs::OrthoSlice::AlignedAxis a = kvs::OrthoSlice::ZAxis;
+	  usleep(1000);
+	  
+	  Leap::Vector pNormal = hand.palmNormal();
+	  kvs::Vec3 palmNormal = leap_to_World(pNormal);
+	  Leap::Vector pPosition = hand.palmPosition();
+	  // kvs::Vec3 palmPosition = kvs::Vec3(pPosition.x, pPosition.y, pPosition.z);
+	  
+	  kvs::Vec3 palmPosition_world = leap_to_World( pPosition, iBox );
+	  std::cout << "p world" << std::endl;
+	  palmPosition_world.print();
+	  const kvs::ObjectCoordinate objectCoordinate = kvs::WorldCoordinate(palmPosition_world).toObjectCoordinate(m_volume);
+	  kvs::Vec3 palmPosition = objectCoordinate.position();
+	  std::cout << "p object" << std::endl;
+	  palmPosition.print();
+	  /* Extract planes by using SlicePlane class.                                                                                                            
+	   *    c: center of gravity of the volume object.                                                                                                        
+	   *    p: point located on the plane.                                                                                                                    
+	   *    n: normal vector of the plane.                                                                                                                    
+	   *    t: transfer function.                                                                                                                             
+	   */
+	  const kvs::Vector3f c( ( m_volume->maxObjectCoord() + m_volume->minObjectCoord() ) * 0.5f );
+	  m_volume->minObjectCoord().print();
+	  m_volume->maxObjectCoord().print();
+	  const kvs::Vector3f p( c );
+	  //const kvs::Vector3f p( palmPosition );
+	  const kvs::Vector3f n2( palmNormal );
+	  //const kvs::Vector3f n2( 1.5, 0.8, 2.0 );
+	  const kvs::TransferFunction t( 256 );
+	  kvs::PolygonObject* object2 = new kvs::SlicePlane( m_volume, p, n2, t );
+	  
+	  object2->setName("Slice");
+	  m_screen.scene()->replaceObject("Slice",object2);
 
-	const kvs::TransferFunction t( 256 );
-	kvs::PolygonObject* object2 = new kvs::OrthoSlice( m_volume, p, a, t );
-	object2->setName("Ortho");
-
-	m_screen.scene()->replaceObject("Ortho",object2);
-	/*
-	  if (handCenter.z < m_volume->minValue())
-	  {
-                handCenter.z = m_volume->minValue();                                                                                                                                                                                                                                                                          
-              }                                                                                                                                                                                                                                                                                                               
-            else if (handCenter.z > m_volume->maxValue() )                                                                                                                                                                                                                                                                    
-              {                                                                                                                                                                                                                                                                                                               
-                handCenter.z = m_volume->maxValue();                                                                                                                                                                                                                                                                          
-              }                                                                                                                                                                                                                                                                                                               
-            // const double i = ( m_volume->maxValue() + m_volume->minValue() ) * handCenter.z / 100 ;                                                                                                                                                                                                                        
-            const double i = handCenter.z;                                                                                                                                                                                                                                                                                    
-            const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;                                                                                                                                                                                                                                        
-            const bool d = false;                                                                                                                                                                                                                                                                                             
-            const kvs::TransferFunction t( 256 );                                                                                                                                                                                                                                                                             
-            kvs::PolygonObject* object1 = new kvs::Isosurface( m_volume, i, n, d, t );                                                                                                                                                                                                                                        
-            object1->setName("Iso");                                                                                                                                                                                                                                                                                          
-            m_screen.scene()->replaceObject("Iso",object1);                                                                                                                                                                                                                                                                   
-	*/
 	}
-	/*	const Leap::FingerList fingers = frame.hands()[0].fingers();
-	for (Leap::FingerList::const_iterator fl = fingers.begin(); fl != fingers.end(); fl++){
-	  const Leap::Bone bone;
-	  Leap::Bone::Type boneType;
-	  bonetype = stat
-	  std::cout <<std::string(4, ' ') <<  fingerNames[finger.type()]
-		    << std::endl;
-	}
-	*/
+
       }
-    /*
-    const Leap::GestureList gestures = frame.gestures();
-    for(int g = 0; g < gestures.count(); ++g)
-      {
-	Leap::Gesture gesture= gestures[g];
-	switch(gesture.type()) 
-	  {
-	  case  Leap::Gesture::TYPE_CIRCLE: 
-	    {
-	      Leap::CircleGesture circle = gesture;
-	      std::cout << "Circle" << std::endl;
-	      
-	      //Calculate angle swept since last frame
-	      float sweptAngle = 0;
-	      if(circle.state() != Leap::Gesture::STATE_START)
-		{
-		  Leap::CircleGesture previousUpdate = Leap::CircleGesture(controller.frame(1).gesture(circle.id()));
-		  sweptAngle = (circle.progress() - previousUpdate.progress()) * 2 * Leap::PI;
-		}
-	      std::cout << std::string(2, ' ')
-			<< "Circle id: " << gesture.id()
-			<< ", progress: " << circle.progress()
-			<< ", angle " << sweptAngle * Leap:: RAD_TO_DEG << std::endl;
-	      m_volume->updateMinMaxValues();
-	      float safeAngle  = sweptAngle * 57.295779513f / Leap::PI;
-	      if(safeAngle >=0.5)
-		{
-		  safeAngle = 0.5;
-		}
-	      const double i = m_volume->maxValue() * safeAngle;
-	      std::cout << "shu" << safeAngle << std::endl;
-	      //const double i = sweptAngle;
-	      const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
-	      const bool d = false;
-	      const kvs::TransferFunction t( 256 );
-	      kvs::PolygonObject* object1 = new kvs::Isosurface( m_volume, i, n, d, t );
-	      object1->setName("Iso");
-	      
-	      m_screen.scene()->replaceObject("Iso",object1);
-	      break;
-	    }    
-	  case Leap:: Gesture::TYPE_SWIPE: 
-	    std::cout << "Swipe id: " << gesture.id() <<std::endl;
-	    break;
-	  case Leap::Gesture::TYPE_KEY_TAP:
-	    std::cout << "Key Tap id: " << gesture.id() <<std::endl;
-	    break;
-	  case Leap::Gesture::TYPE_SCREEN_TAP:
-	    std::cout << "Screen Type id: " << gesture.id() <<std::endl;
-	    break;
-	  default:
-	    std::cout << std::string(2, ' ')  << "Unknown gesture type." << std::endl;
-	    break;
-	
-	  }
-      } */
  
 	m_screen.redraw();
 
-      /*
-    const Leap::Frame frame = controller.frame();
-    std::cout << "Frame id: " << frame.id() << std::endl;
-    Leap::HandList hands = frame.hands();
-    for (Leap::HandList::const_iterator hl = hands.begin(); hl != hands.end(); ++hl) {
-      // Get the first hand                                                                                                                 
-      const Leap::Hand hand = *hl;
-      std::string handType = hand.isLeft() ? "Left hand" : "Right hand";
-      std::cout << std::string(2, ' ') << handType << ", id: " << hand.id()
-		<< ", palm position: " << hand.palmPosition() << std::endl;
-      // Get the hand's normal vector and direction                                                                                         
-      const Leap::Vector normal = hand.palmNormal();
-      const Leap::Vector direction = hand.direction();
 
-      // Calculate the hand's pitch, roll, and yaw angles                                                                                   
-      std::cout << std::string(2, ' ') <<  "pitch: " << direction.pitch() * Leap::RAD_TO_DEG << " degrees, "
-		<< "roll: " << normal.roll() * Leap::RAD_TO_DEG << " degrees, "
-		<< "yaw: " << direction.yaw() * Leap::RAD_TO_DEG << " degrees" << std::endl;
-    */
       }
   };
 
@@ -216,15 +267,20 @@ public:
 /*===========================================================================*/
 int main( int argc, char** argv )
 {
-    kvs::glut::Application app( argc, argv );
-
-    /* Read volume data from the specified data file. If the data file is not
+  kvs::oculus::Application app( argc, argv );
+  //kvs::glut::Application app(argc, argv);
+   /* Read volume data from the specified data file. If the data file is not
      * specified, scalar hydrogen volume data is created by using
      * kvs::HydrogenVolumeData class.
      */
     kvs::StructuredVolumeObject* volume = NULL;
-    if ( argc > 1 ) volume = new kvs::StructuredVolumeImporter( std::string( argv[1] ) );
-    else            volume = new kvs::HydrogenVolumeData( kvs::Vector3ui( 64, 64, 64 ) );
+    if ( argc > 1 ) {volume = new kvs::StructuredVolumeImporter( std::string( argv[1] ) );
+      //volume = new kvs::StructuredVectorToScalar(volume);
+      Scale(volume, 10000);
+      }
+
+    }
+     else            volume = new kvs::HydrogenVolumeData( kvs::Vector3ui( 64, 64, 64 ) );
 
     if ( !volume )
     {
@@ -232,6 +288,7 @@ int main( int argc, char** argv )
         return( false );
     }
 
+    kvs::StructuredVolumeObject* s_volume = new kvs::StructuredVectorToScalar(volume);
     /* Extract surfaces by using the Isosurface class.
      *    i: isolevel
      *    n: NormalType (PolygonNormal/VertexNormal)
@@ -239,11 +296,11 @@ int main( int argc, char** argv )
      *    t: transfer function
      */
     volume->updateMinMaxValues();
-    const double i = ( volume->maxValue() + volume->minValue() ) * 0.5;
+    const double i = ( s_volume->maxValue() + s_volume->minValue() ) * 0.5;
     const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
     const bool d = false;
     const kvs::TransferFunction t( 256 );
-    kvs::PolygonObject* object1 = new kvs::Isosurface( volume, i, n, d, t );
+    kvs::PolygonObject* object1 = new kvs::Isosurface( s_volume, i, n, d, t );
     if ( !object1 )
     {
         kvsMessageError( "Cannot create a polygon object1." );
@@ -253,31 +310,69 @@ int main( int argc, char** argv )
 
     object1->setName("Iso");
 
-    /* Extract orthogonal planes by using OrthoSlice class.                                                                    
-     *    p: plane position.                                                                                                   
-     *    a: axis of the orthogonal plane.                                                                                     
-     *    t: transfer function.                                                                                                
+    /* Extract planes by using SlicePlane class.
+     *    c: center of gravity of the volume object.
+     *    p: point located on the plane.
+     *    n: normal vector of the plane.
+     *    t: transfer function.
      */
-    const float p = volume->resolution().z() * 0.5f;
-    const kvs::OrthoSlice::AlignedAxis a = kvs::OrthoSlice::ZAxis;
-    // const kvs::TransferFunction t( 256 );
-    kvs::PolygonObject* object2 = new kvs::OrthoSlice( volume, p, a, t );
+    const kvs::Vector3f c( ( volume->maxObjectCoord() + volume->minObjectCoord() ) * 0.7f );
+    std::cout<<"max"<<volume->maxObjectCoord()<<std::endl;
+    const kvs::Vector3f p( c );
+    const kvs::Vector3f n2( 1.0, 0.8, 0.3 );
+    kvs::PolygonObject* object2 = new kvs::SlicePlane( s_volume, p, n2, t );
     if ( !object2 )
       {
-        kvsMessageError( "Cannot create a polygon object2." );
+        kvsMessageError( "Cannot create a polygon object by Slice plane." );
         delete volume;
         return( false );
       }
 
-    object2->setName("Ortho");
 
-    //    delete volume;
+    object2->setName("Slice");
+
+    std::vector<kvs::Real32> v;
+
+    kvs::Vector3i min_coord( 0,0,0 );
+    //kvs::Vector3i min_coord( 13, 13, 13 );                                                                                                 
+    //kvs::Vector3i min_coord( 7, 15,  16 );                                                                                                 
+    kvs::Vector3i max_coord(63,63,63);
+
+    for ( int k = min_coord.z(); k < max_coord.z(); k++ )
+
+      for ( int j = min_coord.y(); j < max_coord.y(); j++ )
+	{
+	  for ( int i = min_coord.x(); i < max_coord.x(); i++ )
+	    {
+	      v.push_back( static_cast<kvs::Real32>(i) );
+	      v.push_back( static_cast<kvs::Real32>(j) );
+	      v.push_back( static_cast<kvs::Real32>(k) );
+	    }
+	}
+
+
+    kvs::PointObject* point = new kvs::PointObject;
+    point->setCoords( kvs::ValueArray<kvs::Real32>( v ) );
+    const kvs::TransferFunction transfer_function( 256 );
+    kvs::LineObject* object = new kvs::Streamline( volume, point, transfer_function );
+    kvs::StylizedLineRenderer* renderer = new kvs::StylizedLineRenderer();
+
+    renderer->enableShading();
+    delete point;
+
+
+
+    //delete volume;
 
     // Screen.
-    kvs::glut::Screen screen( &app );
+    kvs::oculus::Screen screen( &app );
+    // kvs::glut::Screen screen( &app );
+    //screen.registerObject( object);
+    // screen.registerObject( object ,new kvs::Bounds() );
     screen.registerObject( object1 );
+    screen.registerObject( object2 ,new kvs::Bounds() );
     screen.registerObject( object2 );
-    screen.setGeometry( 0, 0, 512, 512 );
+    //    screen.setGeometry( 0, 0, 512, 512 );
     screen.setTitle( "kvs::Isosurface" );
     screen.show();
 
@@ -285,7 +380,7 @@ int main( int argc, char** argv )
     SampleListener listener( screen, volume );
     Leap::Controller controller;
     controller.addListener( listener );
-
+    controller.setPolicy(Leap::Controller::POLICY_IMAGES);
 
     return( app.run() );
 }
