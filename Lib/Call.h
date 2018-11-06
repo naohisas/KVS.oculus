@@ -13,7 +13,7 @@ namespace oculus
 namespace internal
 {
 
-inline bool HasError( const char* file, const int line, const char* func, const char* command );
+bool HasError( const char* file, const int line, const char* func, const char* command );
 
 } // end of namespace internal
 

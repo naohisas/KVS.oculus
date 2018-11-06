@@ -4,6 +4,7 @@
 #include <string>
 #include <kvs/Type>
 #include <kvs/Vector2>
+#include <kvs/OpenGL>
 #include <kvs/FrameBufferObject>
 #include <kvs/RenderBuffer>
 #include <kvs/Texture2D>

@@ -1,8 +1,8 @@
 #include "HeadMountedDisplay.h"
 #include "Oculus.h"
+#include "OVR.h"
 #include "Call.h"
 #include <kvs/Platform>
-#include <kvs/OpenGL>
 #include <kvs/IgnoreUnusedVariable>
 
 
@@ -143,7 +143,7 @@ bool HeadMountedDisplay::configureRendering()
     KVS_OVR_CALL( m_render_descs[0] = ovr_GetRenderDesc( m_handler, ovrEye_Left, this->defaultEyeFov(0) ) );
     KVS_OVR_CALL( m_render_descs[1] = ovr_GetRenderDesc( m_handler, ovrEye_Right, this->defaultEyeFov(1) ) );
 
-#elif KVS_OVR_VERSION_GREATER_QR_EQUAL( 0, 6, 0 )
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
     KVS_OVR_CALL( m_render_descs[0] = ovrHmd_GetRenderDesc( m_handler, ovrEye_Left, this->defaultEyeFov(0) ) );
     KVS_OVR_CALL( m_render_descs[1] = ovrHmd_GetRenderDesc( m_handler, ovrEye_Right, this->defaultEyeFov(1) ) );
 
@@ -162,11 +162,11 @@ bool HeadMountedDisplay::configureRendering()
     config.OGL.Window = wnd;
     config.OGL.DC = dc;
 #endif
-    const ovrFovPort* fov = m_handler->DefaultEyeFov;
-    const kvs::UInt32 caps = ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive;
+    ovrFovPort fov[2] = { this->defaultEyeFov(0), this->defaultEyeFov(1) };
+    kvs::UInt32 caps = ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive;
     ovrBool result = ovrTrue;
-    KVS_OVR_CALL( result = ovrHmd_ConfigureRendering( m_handler, config, caps, fov, m_render_descs ) );
-    if ( OVR_FAILURE( result ) ) { return false; }
+    KVS_OVR_CALL( result = ovrHmd_ConfigureRendering( m_handler, &config.Config, caps, fov, m_render_descs ) );
+    if ( result == ovrFalse ) { return false; }
 
     KVS_OVR_CALL( ovrHmd_SetEnabledCaps( m_handler, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction ) );
     // KVS_OVR_CALL( ovrHmd_DismissHSWDisplay( m_handler ) );
@@ -219,7 +219,6 @@ void HeadMountedDisplay::beginFrame( const kvs::Int64 frame_index )
 #else
     ovrFrameTiming result;
     KVS_OVR_CALL( result = ovrHmd_BeginFrame( m_handler, frame_index ) );
-    KVS_ASSERT( OVR_SUCCESS( result ) );
 
     // Bind the frame buffer object.
     m_framebuffer.bind();
@@ -235,7 +234,7 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
     kvs::IgnoreUnusedVariable( frame_index );
     m_framebuffer.unbind();
 
-    ovrGLTexture* color_texture = &m_color_textures[0].Texture;
+    const ovrTexture* color_texture = &m_color_textures[0].Texture;
     KVS_OVR_CALL( ovrHmd_EndFrame( m_handler, m_eye_poses, color_texture ) );
 
 #else
@@ -283,10 +282,13 @@ double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
     double result;
     KVS_OVR_CALL( result = ovr_GetPredictedDisplayTime( m_handler, frame_index ) );
     return result;
-#else
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
     ovrFrameTiming timing;
     KVS_OVR_CALL( timing = ovr_GetFrameTiming( m_handler, frame_index ) );
     return timing.DisplayMidpointSeconds;
+#else
+    kvs::IgnoreUnusedVariable( frame_index );
+    return kvs::oculus::TimeInSecond();
 #endif
 }
 

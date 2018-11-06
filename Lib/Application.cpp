@@ -1,5 +1,7 @@
 #include "Application.h"
 #include "OVR.h"
+#include <kvs/Message>
+#include <cstdlib>
 
 
 namespace kvs
@@ -15,7 +17,11 @@ Application::Application( int argc, char** argv ):
     if ( flag )
     {
         flag = false;
-        if ( !kvs::oculus::Initialize() ) { return; }
+        if ( !kvs::oculus::Initialize() )
+        {
+            kvsMessageError( "Cannot initialize LibOVR." );
+            std::exit( EXIT_FAILURE );
+        }
     }
 }
 

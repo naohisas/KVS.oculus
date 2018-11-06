@@ -15,7 +15,7 @@ namespace oculus
 namespace internal
 {
 
-inline bool HasError(
+bool HasError(
     const char* file,
     const int line,
     const char* func,

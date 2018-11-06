@@ -14,11 +14,11 @@ namespace oculus
 bool Initialize()
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
-    ovrResult result;
+    ovrResult result = ovrSuccess;
     KVS_OVR_CALL( result = ovr_Initialize( NULL ) );
     return OVR_SUCCESS( result );
 #else
-    ovrBool result;
+    ovrBool result = ovrTrue;
     KVS_OVR_CALL( result = ovr_Initialize( NULL ) );
     return result == ovrTrue;
 #endif
@@ -32,7 +32,7 @@ void Shutdown()
 int Detect()
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
-    ovrHmdDesc desc;
+    ovrHmdDesc desc = {};
     KVS_OVR_CALL( desc = ovr_GetHmdDesc( NULL ) );
     return desc.Type == ovrHmd_None ? 0 : 1;
 #else
@@ -51,14 +51,14 @@ std::string VersionString()
 
 double TimeInSecond()
 {
-    double result;
+    double result = 0.0;
     KVS_OVR_CALL( result = ovr_GetTimeInSeconds() );
     return result;
 }
 
 int TraceMessage( int level, const char* message )
 {
-    int result;
+    int result = 0;
     KVS_OVR_CALL( result = ovr_TraceMessage( level, message ) );
     return result;
 }

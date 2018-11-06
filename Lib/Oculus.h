@@ -1,10 +1,10 @@
 #pragma once
-
-#include <string>
+#include <kvs/OpenGL>
 #include <OVR_CAPI.h>
 #include <OVR_CAPI_GL.h>
 #include <OVR_Version.h>
 #include <Extras/OVR_Math.h>
+#include <string>
 
 
 namespace kvs
