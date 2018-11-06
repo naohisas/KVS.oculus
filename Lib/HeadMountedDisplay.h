@@ -1,9 +1,12 @@
 #pragma once
-
 #include "Oculus.h"
+#include "Version.h"
 #include <string>
 #include <kvs/Type>
 #include <kvs/Vector2>
+#include <kvs/FrameBufferObject>
+#include <kvs/RenderBuffer>
+#include <kvs/Texture2D>
 
 
 namespace kvs
@@ -14,53 +17,78 @@ namespace oculus
 
 class HeadMountedDisplay
 {
-private:
-    ovrHmd m_handler;
-
 public:
-    static int Detect();
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
+    typedef ovrSession Handler;
+#else
+    typedef ovrHmd Handler;
+#endif
+
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    typedef ovrHmdDesc* Descriptor;
+#else
+    typedef ovrHmd Descriptor;
+#endif
+
+private:
+    Handler m_handler; ///< HMD device session handler
+    Descriptor m_descriptor; ///< HMD device descriptor
+
+    ovrEyeRenderDesc m_render_descs[2]; ///< rendering descriptors (rendering information of each eye)
+    ovrPosef m_eye_poses[2]; ///< position and orientation of each eye
+    ovrRecti m_viewports[2]; ///< viewport of each eye
+
+    // Rendering buffers.
+    ovrSizei m_buffer_size; ///< rendering buffer size
+    kvs::FrameBufferObject m_framebuffer; ///< frame buffer object
+    kvs::RenderBuffer m_depth_buffer; ///< depth buffer
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    ovrLayerEyeFov m_layer_data; ///< frame layer data
+#else
+    kvs::Texture2D m_color_buffer; ///< color buffer
+    ovrGLTexture m_color_textures[2]; ///< texture information of each eye
+#endif
 
 public:
     HeadMountedDisplay();
 
-    // Propaties
-    const ovrHmd& handler() const { return m_handler; }
-    std::string productName() const { return std::string( m_handler->ProductName ); }
-    std::string manufacturer() const { return std::string( m_handler->Manufacturer ); }
-    kvs::Int16 vendorId() const { return m_handler->VendorId; }
-    kvs::Int16 productId() const { return m_handler->ProductId; }
-    kvs::UInt32 hmdCaps() const { return m_handler->HmdCaps; }
-    kvs::UInt32 trackingCaps() const { return m_handler->TrackingCaps; }
-    kvs::UInt32 distortionCaps() const { return m_handler->DistortionCaps; }
-    ovrFovPort defaultEyeFov( const size_t index ) const { return m_handler->DefaultEyeFov[index]; }
-    ovrFovPort maxEyeFov( const size_t index ) const { return m_handler->MaxEyeFov[index]; }
-    ovrEyeType eyeRenderOrder( const size_t index ) const { return m_handler->EyeRenderOrder[index]; }
-    ovrSizei resolution() const { return m_handler->Resolution; }
-    ovrVector2i windowPosition() const { return m_handler->WindowsPos; }
+    const Handler& handler() const { return m_handler; }
+    const ovrEyeRenderDesc& renderDesc( const size_t eye_index ) const { return m_render_descs[eye_index]; }
+    const ovrPosef& eyePose( const size_t eye_index ) const { return m_eye_poses[eye_index]; }
+    const ovrRecti& viewport( const size_t eye_index ) const { return m_viewports[eye_index]; }
 
-    bool create( int index = 0 );
-    bool createDebug( ovrHmdType type = ovrHmd_DK1 );
+    // Descriptor.
+    std::string productName() const { return std::string( m_descriptor->ProductName ); }
+    std::string manufacturer() const { return std::string( m_descriptor->Manufacturer ); }
+    kvs::Int16 vendorId() const { return m_descriptor->VendorId; }
+    kvs::Int16 productId() const { return m_descriptor->ProductId; }
+    ovrFovPort defaultEyeFov( const size_t eye_index ) const { return m_descriptor->DefaultEyeFov[ eye_index ]; }
+    ovrFovPort maxEyeFov( const size_t eye_index ) const { return m_descriptor->MaxEyeFov[ eye_index ]; }
+    ovrSizei resolution() const { return m_descriptor->Resolution; }
+    kvs::UInt32 availableHmdCaps() const;
+    kvs::UInt32 availableTrackingCaps() const;
+    kvs::UInt32 defaultHmdCaps() const;
+    kvs::UInt32 defaultTrackingCaps() const;
+
+    bool create( const int index = 0 );
     void destroy();
-    std::string lastError();
 
-    bool attachToWindow( void* window, const ovrRecti* dst_mirror_rect, const ovrRecti* src_render_target_rect );
-    kvs::UInt32 enabledCaps();
-    void setEnabledCaps( kvs::UInt32 caps );
+    // Rendering
+    bool configureRendering();
+    void beginFrame( const kvs::Int64 frame_index );
+    void endFrame( const kvs::Int64 frame_index );
+    double frameTiming( const kvs::Int64 frame_index );
 
-    // Tracking interface methods
-    bool configureTracking( kvs::UInt32 supported_caps, kvs::UInt32 required_caps );
-    void recenterPose();
-    ovrTrackingState trackingState( double absolute_time );
+    // Tracking
+    bool configureTracking( const kvs::UInt32 supported_caps, const kvs::UInt32 required_caps );
+    void resetTracking();
+    ovrTrackingState trackingState( const double absolute_time = 0.0, const bool latency = true );
 
-    // Graphics setup method
-    ovrSizei fovTextureSize( ovrEyeType eye, ovrFovPort fov, float pixels_per_display_pixel );
-
-    // SDK distortion rendering methods
-    bool configureRendering( const ovrRenderAPIConfig* conf, kvs::UInt32 caps, const ovrFovPort fov[2], ovrEyeRenderDesc desc[2] );
-    ovrFrameTiming beginFrame( kvs::UInt32 index = 0 );
-    void endFrame( const ovrPosef pose[2], const ovrTexture texture[2] );
-    void getEyePoses( kvs::UInt32 index, const ovrVector3f offset[2], ovrPosef poses[2], ovrTrackingState* state );
-    ovrPosef posePerEye( ovrEyeType eye );
+private:
+    bool initialize_render_texture();
+    void update_eye_poses( const kvs::Int64 frame_index );
+    void update_viewport();
+    ovrSizei fov_texture_size( const ovrEyeType eye, const ovrFovPort fov, const float pixels_per_display_pixel );
 };
 
 } // end of namespace oculus

@@ -1,24 +1,21 @@
-#include <kvs/OpenGL>
-#include <Lib/Oculus.h>
-#include <Lib/HeadMountedDisplay.h>
-#include <Lib/Application.h>
-#include <Lib/Screen.h>
-#include <iostream>
-
 #include <kvs/HydrogenVolumeData>
 #include <kvs/StructuredVolumeObject>
 #include <kvs/PolygonObject>
 #include <kvs/Isosurface>
 #include <kvs/Bounds>
+#include <Lib/Oculus.h>
+#include <Lib/HeadMountedDisplay.h>
+#include <Lib/Application.h>
+#include <Lib/Screen.h>
 
-void Isosurface( kvs::glut::Screen& screen )
+
+int main( int argc, char** argv )
 {
-  kvs::StructuredVolumeObject* volume = NULL;
+    kvs::oculus::Application app( argc, argv );
+    kvs::oculus::Screen screen( &app );
+    screen.show();
 
-      volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
-
-
-    
+    kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
     const double i = kvs::Math::Mix( volume->minValue(), volume->maxValue(), 0.2 );
     const kvs::PolygonObject::NormalType n = kvs::PolygonObject::VertexNormal;
     const bool d = false;
@@ -28,32 +25,7 @@ void Isosurface( kvs::glut::Screen& screen )
 
     screen.registerObject( object, new kvs::Bounds() );
     screen.registerObject( object );
-}
-
-#include <kvs/RayCastingRenderer>
-
-void VolumeRendering( kvs::glut::Screen& screen )
-{
-    kvs::StructuredVolumeObject* object = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
-    kvs::StructuredVolumeObject* m_volume = new kvs::StructuredVectorToScalar(volume);
-//    kvs::glsl::RayCastingRenderer* renderer = new kvs::glsl::RayCastingRenderer();
-    kvs::RayCastingRenderer* renderer = new kvs::RayCastingRenderer();
-
-    screen.registerObject( object, new kvs::Bounds() );
-    screen.registerObject( object, renderer );
-}
-
-int main( int argc, char** argv )
-{
-    kvs::oculus::Application app( argc, argv );
-    kvs::oculus::Screen screen( &app );
     screen.show();
-    
-
-    Isosurface( screen );
-//    VolumeRendering( screen );
-
-//    screen.show();
 
     return app.run();
 /*

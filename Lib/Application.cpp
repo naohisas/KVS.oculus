@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "OVR.h"
 
+
 namespace kvs
 {
 
@@ -14,7 +15,7 @@ Application::Application( int argc, char** argv ):
     if ( flag )
     {
         flag = false;
-        if ( !kvs::oculus::Initialize( NULL ) ) { return; }
+        if ( !kvs::oculus::Initialize() ) { return; }
     }
 }
 

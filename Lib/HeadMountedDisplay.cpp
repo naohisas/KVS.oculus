@@ -1,27 +1,9 @@
 #include "HeadMountedDisplay.h"
-#include "OVR.h"
-#include <kvs/Macro>
-#include <kvs/Breakpoint>
-
-
-/*===========================================================================*/
-/**
- *  @def KVS_OVR_CALL( command )
- *  A macro for OVR command safe calling. An error checking will be done
- *  before and after calling the command when the debug option (KVS_ENABLE_DEBUG)
- *  is available.
- */
-/*===========================================================================*/
-#if defined( KVS_ENABLE_DEBUG )
-#define KVS_OVR_CALL( command )                                          \
-    KVS_MACRO_MULTI_STATEMENT_BEGIN                                     \
-    if ( kvs::oculus::internal::HasError( m_handler, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC, "Unknown" ) ) { KVS_BREAKPOINT; } \
-    command;                                                            \
-    if ( kvs::oculus::internal::HasError( m_handler, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC, #command ) ) { KVS_BREAKPOINT; } \
-    KVS_MACRO_MULTI_STATEMENT_END
-#else
-#define KVS_OVR_CALL( command ) ( command )
-#endif
+#include "Oculus.h"
+#include "Call.h"
+#include <kvs/Platform>
+#include <kvs/OpenGL>
+#include <kvs/IgnoreUnusedVariable>
 
 
 namespace kvs
@@ -30,121 +12,536 @@ namespace kvs
 namespace oculus
 {
 
-int HeadMountedDisplay::Detect()
-{
-    return ovrHmd_Detect();
-}
-
 HeadMountedDisplay::HeadMountedDisplay():
-    m_handler( 0 )
+    m_handler( 0 ),
+    m_descriptor( 0 )
 {
 }
 
-bool HeadMountedDisplay::create( int index )
+kvs::UInt32 HeadMountedDisplay::availableHmdCaps() const
 {
-    return ( m_handler = ovrHmd_Create( index ) ) != NULL;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    return m_descriptor->AvailableHmdCaps;
+#else
+    return m_descriptor->HmdCaps;
+#endif
 }
 
-bool HeadMountedDisplay::createDebug( ovrHmdType type )
+kvs::UInt32 HeadMountedDisplay::availableTrackingCaps() const
 {
-    return ( m_handler = ovrHmd_CreateDebug( type ) ) != NULL;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    return m_descriptor->AvailableTrackingCaps;
+#else
+    return m_descriptor->TrackingCaps;
+#endif
+}
+
+kvs::UInt32 HeadMountedDisplay::defaultHmdCaps() const
+{
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    return m_descriptor->DefaultHmdCaps;
+#else
+    return m_descriptor->HmdCaps;
+#endif
+}
+
+kvs::UInt32 HeadMountedDisplay::defaultTrackingCaps() const
+{
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    return m_descriptor->DefaultTrackingCaps;
+#else
+    return m_descriptor->TrackingCaps;
+#endif
+}
+
+bool HeadMountedDisplay::create( const int index )
+{
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    ovrGraphicsLuid luid;
+    ovrResult result;
+    KVS_OVR_CALL( result = ovr_Create( &m_handler, &luid ) );
+    if ( OVR_FAILURE( result ) ) { return false; }
+
+    m_descriptor = new ovrHmdDesc;
+    KVS_OVR_CALL( *m_descriptor = ovr_GetHmdDesc( m_handler ) );
+    return true;
+
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    ovrResult result;
+    KVS_OVR_CALL( result = ovrHmd_Create( index, &m_handler ) );
+    if ( OVR_FAILURE( result ) )
+    {
+        KVS_OVR_CALL( ovrHmd_CreateDebug( ovrHmd_DK1, &m_handler ) );
+        if ( !m_handler ) { return false; }
+    }
+
+    m_descriptor = m_handler;
+    return true;
+
+#else
+    KVS_OVR_CALL( m_handler = ovrHmd_Create( index ) );
+    if ( !m_handler )
+    {
+        KVS_OVR_CALL( m_handler = ovrHmd_CreateDebug( ovrHmd_DK1 ) );
+        if ( !m_handler ) { return false; }
+    }
+
+    m_descriptor = m_handler;
+    return true;
+
+#endif
 }
 
 void HeadMountedDisplay::destroy()
 {
     if ( m_handler )
     {
-        ovrHmd_Destroy( m_handler );
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+        KVS_OVR_CALL( ovr_Destroy( m_handler ) );
+        if ( m_descriptor ) { delete m_descriptor; }
+#else
+        KVS_OVR_CALL( ovrHmd_Destroy( m_handler ) );
+#endif
         m_handler = 0;
+        m_descriptor = 0;
     }
 }
 
-std::string HeadMountedDisplay::lastError()
+bool HeadMountedDisplay::configureTracking( const kvs::UInt32 supported_caps, const kvs::UInt32 required_caps )
 {
-    return std::string( ovrHmd_GetLastError( m_handler ) );
+#if ( OVR_RPODUCT_VERSION >= 1 ) // Oculus SDK 1.x.x
+    kvs::IgnoreUnusedVariable( supported_caps );
+    kvs::IgnoreUnusedVariable( required_caps );
+    ovrResult result;
+    KVS_OVR_CALL( result = ovr_SetTrackingOriginType( m_handler, ovrTrackingOrigin_FloorLevel ) );
+    return OVR_SUCCESS( result );
+
+#else // Oculus SDK 0.x.x
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
+    // Usage of ovr_ConfigureTracking is no longer needed unless you want to disable tracking features.
+    // By default, ovr_Create enables the full tracking capabilities supported by any given device.
+    kvs::IgnoreUnusedVariable( supported_caps );
+    kvs::IgnoreUnusedVariable( required_caps );
+    return true;
+
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    ovrResult result;
+    KVS_OVR_CALL( result = ovr_ConfigureTracking( m_handler, supported_caps, required_caps ) );
+    return OVR_SUCCESS( result );
+
+#else
+    ovrBool result;
+    KVS_OVR_CALL( result = ovrHmd_ConfigureTracking( m_handler, supported_caps, required_caps ) );
+    return result == ovrTrue;
+#endif
+#endif
 }
 
-bool HeadMountedDisplay::attachToWindow(
-    void* window,
-    const ovrRecti* dst_mirror_rect,
-    const ovrRecti* src_render_target_rect )
+bool HeadMountedDisplay::configureRendering()
 {
-    ovrBool ret;
-    KVS_OVR_CALL( ret = ovrHmd_AttachToWindow( m_handler, window, dst_mirror_rect, src_render_target_rect ) );
-    return ret == ovrTrue;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    KVS_OVR_CALL( m_render_descs[0] = ovr_GetRenderDesc( m_handler, ovrEye_Left, this->defaultEyeFov(0) ) );
+    KVS_OVR_CALL( m_render_descs[1] = ovr_GetRenderDesc( m_handler, ovrEye_Right, this->defaultEyeFov(1) ) );
+
+#elif KVS_OVR_VERSION_GREATER_QR_EQUAL( 0, 6, 0 )
+    KVS_OVR_CALL( m_render_descs[0] = ovrHmd_GetRenderDesc( m_handler, ovrEye_Left, this->defaultEyeFov(0) ) );
+    KVS_OVR_CALL( m_render_descs[1] = ovrHmd_GetRenderDesc( m_handler, ovrEye_Right, this->defaultEyeFov(1) ) );
+
+#else
+    ovrGLConfig config;
+    config.OGL.Header.API = ovrRenderAPI_OpenGL;
+    config.OGL.Header.BackBufferSize = OVR::Sizei( this->resolution().w, this->resolution().h );
+    config.OGL.Header.Multisample = 1;
+#if defined( KVS_PLATFORM_WINDOWS )
+    HDC dc = wglGetCurrentDC();
+    HWND wnd = WindowFromDC( dc );
+    if ( !( this->hmdCaps() & ovrHmdCap_ExtendDesktop ) )
+    {
+        KVS_OVR_CALL( ovrHmd_AttachToWindow( m_handler, wnd, NULL, NULL ) );
+    }
+    config.OGL.Window = wnd;
+    config.OGL.DC = dc;
+#endif
+    const ovrFovPort* fov = m_handler->DefaultEyeFov;
+    const kvs::UInt32 caps = ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive;
+    ovrBool result = ovrTrue;
+    KVS_OVR_CALL( result = ovrHmd_ConfigureRendering( m_handler, config, caps, fov, m_render_descs ) );
+    if ( OVR_FAILURE( result ) ) { return false; }
+
+    KVS_OVR_CALL( ovrHmd_SetEnabledCaps( m_handler, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction ) );
+    // KVS_OVR_CALL( ovrHmd_DismissHSWDisplay( m_handler ) );
+#endif
+
+    this->update_viewport();
+    return this->initialize_render_texture();
 }
 
-kvs::UInt32 HeadMountedDisplay::enabledCaps()
+void HeadMountedDisplay::beginFrame( const kvs::Int64 frame_index )
 {
-    kvs::UInt32 caps;
-    KVS_OVR_CALL( caps = ovrHmd_GetEnabledCaps( m_handler ) );
-    return caps;
+#if ( KVS_OVR_MAJOR_VERSION >= 1 ) // Oculus SDK 1.x.x
+    ovrResult result;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 19, 0 )
+    KVS_OVR_CALL( result = ovr_BeginFrame( m_handler, frame_index ) );
+    KVS_ASSERT( OVR_SUCCESS( result ) );
+#endif
+
+    // Get the crrent color texture ID.
+    const ovrTextureSwapChain& color_textures = m_layer_data.ColorTexture[0];
+    int current_index = 0;
+    KVS_OVR_CALL( result = ovr_GetTextureSwapChainCurrentIndex( m_handler, color_textures, &current_index ) );
+    KVS_ASSERT( OVR_SUCCESS( result ) );
+
+    // Bind the frame buffer object.
+    m_framebuffer.bind();
+    GLuint tex_id = 0;
+    KVS_OVR_CALL( result = ovr_GetTextureSwapChainBufferGL( m_handler, color_textures, current_index, &tex_id ) );
+    KVS_ASSERT( OVR_SUCCESS( result ) );
+    KVS_GL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+
+#else // Oculus SDK 0.x.x
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    // ovrHmd_BeginFrame was removed and ovrHmd_EndFrame was replaced with ovrHmd_SubmitFrame.
+    // A list of layer pointers is passed into ovrHmd_SubmitFrame.
+    kvs::IgnoreUnusedVariable( frame_index );
+
+    // Get the crrent color texture ID.
+    ovrSwapTextureSet* color_textures = m_layer_data.ColorTexture[0];
+    const int texture_count = color_textures->TextureCount;
+    const int prev_index = color_textures->CurrentIndex;
+    const int current_index = ( prev_index + 1 ) % texture_count;
+    color_textures->CurrentIndex = current_index;
+
+    // Bind the frame buffer object.
+    m_framebuffer.bind();
+    const GLuint tex_id = reinterpret_cast<ovrGLTexture *>( &color_textures->Textures[ current_index ] )->OGL.TexId;
+    KVS_GL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+
+#else
+    ovrFrameTiming result;
+    KVS_OVR_CALL( result = ovrHmd_BeginFrame( m_handler, frame_index ) );
+    KVS_ASSERT( OVR_SUCCESS( result ) );
+
+    // Bind the frame buffer object.
+    m_framebuffer.bind();
+#endif
+#endif
+
+    this->update_eye_poses( frame_index );
 }
 
-void HeadMountedDisplay::setEnabledCaps( kvs::UInt32 caps )
+void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
 {
-    KVS_OVR_CALL( ovrHmd_SetEnabledCaps( m_handler, caps ) );
+#if KVS_OVR_VERSION_LESS_OR_EQUAL( 0, 5, 0 ) // Oculus SDK 0.5.0
+    kvs::IgnoreUnusedVariable( frame_index );
+    m_framebuffer.unbind();
+
+    ovrGLTexture* color_texture = &m_color_textures[0].Texture;
+    KVS_OVR_CALL( ovrHmd_EndFrame( m_handler, m_eye_poses, color_texture ) );
+
+#else
+    // Set view-scale descriptor.
+    ovrViewScaleDesc view_scale_desc;
+    view_scale_desc.HmdSpaceToWorldScaleInMeters = 1.0f;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 17, 0 )
+    view_scale_desc.HmdToEyePose[0] = m_render_descs[0].HmdToEyePose;
+    view_scale_desc.HmdToEyePose[1] = m_render_descs[1].HmdToEyePose;
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
+    view_scale_desc.HmdToEyeOffset[0] = m_render_descs[0].HmdToEyeOffset;
+    view_scale_desc.HmdToEyeOffset[1] = m_render_descs[1].HmdToEyeOffset;
+#else
+    view_scale_desc.HmdToEyeViewOffset[0] = m_render_descs[0].HmdToEyeViewOffset;
+    view_scale_desc.HmdToEyeViewOffset[1] = m_render_descs[1].HmdToEyeViewOffset;
+#endif
+
+    // Set layer eye fov.
+    ovrLayerEyeFov layer_eye_fov;
+    layer_eye_fov.Header.Type = ovrLayerType_EyeFov;
+    layer_eye_fov.Header.Flags = 0;
+    layer_eye_fov.ColorTexture[0] = m_layer_data.ColorTexture[0];
+    layer_eye_fov.ColorTexture[1] = m_layer_data.ColorTexture[1];
+    layer_eye_fov.Viewport[0] = m_viewports[0];
+    layer_eye_fov.Viewport[1] = m_viewports[1];
+    layer_eye_fov.Fov[0] = this->defaultEyeFov(0);
+    layer_eye_fov.Fov[1] = this->defaultEyeFov(1);
+    layer_eye_fov.RenderPose[0] = m_eye_poses[0];
+    layer_eye_fov.RenderPose[1] = m_eye_poses[1];
+
+    ovrLayerHeader* layers = &layer_eye_fov.Header;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 19, 0 )
+    KVS_OVR_CALL( ovr_EndFrame( m_handler, frame_index, &view_scale_desc, &layers, 1 ) );
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    KVS_OVR_CALL( ovr_SubmitFrame( m_handler, frame_index, &view_scale_desc, &layers, 1 ) );
+#else
+    KVS_OVR_CALL( ovrHmd_SubmitFrame( m_handler, frame_index, &view_scale_desc, &layers, 1 ) );
+#endif
+#endif
 }
 
-bool HeadMountedDisplay::configureTracking( kvs::UInt32 supported_caps, kvs::UInt32 required_caps )
+double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
 {
-    ovrBool ret;
-    KVS_OVR_CALL( ret = ovrHmd_ConfigureTracking( m_handler, supported_caps, required_caps ) );
-    return ret == ovrTrue;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
+    double result;
+    KVS_OVR_CALL( result = ovr_GetPredictedDisplayTime( m_handler, frame_index ) );
+    return result;
+#else
+    ovrFrameTiming timing;
+    KVS_OVR_CALL( timing = ovr_GetFrameTiming( m_handler, frame_index ) );
+    return timing.DisplayMidpointSeconds;
+#endif
 }
 
-void HeadMountedDisplay::recenterPose()
+void HeadMountedDisplay::resetTracking()
 {
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
+    KVS_OVR_CALL( ovr_RecenterTrackingOrigin( m_handler ) );
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    KVS_OVR_CALL( ovr_RecenterPose( m_handler ) );
+#else
     KVS_OVR_CALL( ovrHmd_RecenterPose( m_handler ) );
+#endif
 }
 
-ovrTrackingState HeadMountedDisplay::trackingState( double absolute_time )
+ovrTrackingState HeadMountedDisplay::trackingState( const double absolute_time, const bool latency )
 {
-    ovrTrackingState state;
-    KVS_OVR_CALL( state = ovrHmd_GetTrackingState( m_handler, absolute_time ) );
-    return state;
+    ovrTrackingState result;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
+    const ovrBool latency_marker = ( latency ) ? ovrTrue : ovrFalse;
+    KVS_OVR_CALL( result = ovr_GetTrackingState( m_handler, absolute_time, latency_marker ) );
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    kvs::IgnoreUnusedVariable( latency );
+    KVS_OVR_CALL( result = ovr_GetTrackingState( m_handler, absolute_time ) );
+#else
+    kvs::IgnoreUnusedVariable( latency );
+    KVS_OVR_CALL( result = ovrHmd_GetTrackingState( m_handler, absolute_time ) );
+#endif
+    return result;
 }
 
-ovrSizei HeadMountedDisplay::fovTextureSize( ovrEyeType eye, ovrFovPort fov, float pixels_per_display_pixel )
+void HeadMountedDisplay::update_viewport()
 {
-    ovrSizei ret;
-    KVS_OVR_CALL( ret = ovrHmd_GetFovTextureSize( m_handler, eye, fov, pixels_per_display_pixel ) );
-    return ret;
+    // Left eye info.
+    const ovrEyeType eye0 = ovrEye_Left;
+    const ovrFovPort fov0 = this->defaultEyeFov(0);
+    const ovrSizei tex0 = this->fov_texture_size( eye0, fov0, 1.0f );
+
+    // Right eye info.
+    const ovrEyeType eye1 = ovrEye_Right;
+    const ovrFovPort fov1 = this->defaultEyeFov(1);
+    const ovrSizei tex1 = this->fov_texture_size( eye1, fov1, 1.0f );
+
+    // Rendering buffer size.
+    ovrSizei m_buffer_size;
+    m_buffer_size.w = tex0.w + tex1.w;
+    m_buffer_size.h = kvs::Math::Max( tex0.h, tex1.h );
+
+    // Viewport of each eye.
+    m_viewports[0].Pos = OVR::Vector2i( 0, 0 );
+    m_viewports[0].Size = OVR::Sizei( m_buffer_size.w / 2, m_buffer_size.h );
+    m_viewports[1].Pos = OVR::Vector2i( ( m_buffer_size.w + 1 ) / 2, 0 );
+    m_viewports[1].Size = m_viewports[0].Size;
+
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    m_layer_data.Viewport[0] = m_viewports[0];
+    m_layer_data.Viewport[1] = m_viewports[1];
+#else
+    m_color_textures[0].OGL.Header.API = ovrRenderAPI_OpenGL;
+    m_color_textures[0].OGL.Header.TextureSize = m_buffer_size;
+    m_color_textures[0].OGL.Header.RenderViewport = m_viewports[0];
+    m_color_textures[1] = m_color_textures[0];
+    m_color_textures[1].OGL.Header.RenderViewport = m_viewports[1];
+#endif
 }
 
-bool HeadMountedDisplay::configureRendering(
-    const ovrRenderAPIConfig* conf,
-    kvs::UInt32 caps,
-    const ovrFovPort fov[2],
-    ovrEyeRenderDesc desc[2] )
+bool HeadMountedDisplay::initialize_render_texture()
 {
-    ovrBool ret;
-    KVS_OVR_CALL( ret = ovrHmd_ConfigureRendering( m_handler, conf, caps, fov, desc ) );
-    return ret == ovrTrue;
+#if ( KVS_OVR_MAJOR_VERSION >= 1 ) // Oculus SDK 1.x.x
+    const ovrTextureSwapChainDesc chain = {
+        ovrTexture_2D, // Type
+        OVR_FORMAT_R8G8B8A8_UNORM_SRGB, // Format
+        1, // ArraySize
+        m_buffer_size.w, // Width
+        m_buffer_size.h, // Height
+        1, // MipLevels
+        1, // SampleCount
+        ovrFalse, // StaticImage
+        0, // MiscFlags
+        0 // BindFlags
+    };
+
+    // Create color textures
+    ovrResult result;
+    ovrTextureSwapChain color_textures;
+    KVS_OVR_CALL( result = ovr_CreateTextureSwapChainGL( m_handler, &chain, &color_textures ) );
+    if ( OVR_FAILURE( result ) )
+    {
+        kvsMessageError("Cannot create color textures.");
+        return false;
+    }
+
+    int texture_count = 0;
+    KVS_OVR_CALL( result = ovr_GetTextureSwapChainLength( m_handler, color_textures, &texture_count ) );
+    if ( OVR_FAILURE( result ) || !texture_count )
+    {
+        kvsMessageError("Cannot get number of color textures.");
+        return false;
+    }
+
+    for ( int i = 0; i < texture_count; i++ )
+    {
+        GLuint tex_id = 0;
+        KVS_OVR_CALL( result = ovr_GetTextureSwapChainBufferGL( m_handler, color_textures, i, &tex_id ) );
+        KVS_ASSERT( OVR_FAILURE( result ) );
+        KVS_GL_CALL( glBindTexture( GL_TEXTURE_2D, tex_id ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
+        KVS_GL_CALL( glBindTexture( GL_TEXTURE_2D, 0 ) );
+    }
+
+    m_layer_data.ColorTexture[0] = color_textures;
+    m_layer_data.ColorTexture[1] = color_textures;
+
+    // Create a depth buffer.
+    m_depth_buffer.setInternalFormat( GL_DEPTH_COMPONENT24 );
+    m_depth_buffer.create( m_buffer_size.w, m_buffer_size.h );
+
+    // Create a frame buffer object.
+    m_framebuffer.create();
+    m_framebuffer.bind();
+    m_framebuffer.attachDepthRenderBuffer( m_depth_buffer );
+    m_framebuffer.unbind();
+
+#else // Oculus SDK 0.x.x
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    // Create color textures
+    ovrResult result;
+    ovrSwapTextureSet* color_textures;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    KVS_OVR_CALL( result = ovr_CreateSwapTextureSetGL(
+                      m_handler,
+                      GL_SRGB8_ALPHA8,
+                      m_buffer_size.w, m_buffer_size.h,
+                      &color_textures ) );
+#else
+    KVS_OVR_CALL( result = ovrHmd_CreateSwapTextureSetGL(
+                      m_handler,
+                      GL_RGBA,
+                      m_buffer_size.w, m_buffer_size.h,
+                      &color_textures ) );
+#endif
+    if ( OVR_FAILURE( result ) )
+    {
+        kvsMessageError("Cannot create color textures.");
+        return false;
+    }
+
+    const int texture_count = color_textures->TextureCount;
+    for ( int i = 0; i < texture_count; i++ )
+    {
+        ovrGLTexture* tex = (ovrGLTexture*)&color_textures->Textures[i];
+        KVS_GL_CALL( glBindTexture( GL_TEXTURE_2D, tex->OGL.TexId ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
+        KVS_GL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
+        KVS_GL_CALL( glBindTexture( GL_TEXTURE_2D, 0 ) );
+    }
+
+    m_layer_data.ColorTexture[0] = color_textures;
+    m_layer_data.ColorTexture[1] = color_textures;
+
+    // Create a depth buffer.
+    m_depth_buffer.setInternalFormat( GL_DEPTH_COMPONENT24 );
+    m_depth_buffer.create( m_buffer_size.w, m_buffer_size.h );
+
+    // Create a frame buffer object.
+    m_framebuffer.create();
+    m_framebuffer.bind();
+    m_framebuffer.attachDepthRenderBuffer( m_depth_buffer );
+    m_framebuffer.unbind();
+
+#else
+    // Create a color buffer.
+    m_color_buffer.setMagFilter( GL_LINEAR );
+    m_color_buffer.setMinFilter( GL_LINEAR );
+    m_color_buffer.setWrapS( GL_CLAMP_TO_EDGE );
+    m_color_buffer.setWrapT( GL_CLAMP_TO_EDGE );
+    m_color_buffer.setPixelFormat( GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+    m_color_buffer.create( m_buffer_size.w, m_buffer_size.h );
+
+    m_color_textures[0].OGL.TexId = m_color_buffer.id();
+    m_color_textures[1].OGL.TexId = m_color_buffer.id();
+
+    // Create a depth buffer.
+    m_depth_buffer.setInternalFormat( GL_DEPTH_COMPONENT24 );
+    m_depth_buffer.create( m_buffer_size.w, m_buffer_size.h );
+
+    // Create a frame buffer object.
+    m_framebuffer.create();
+    m_framebuffer.bind();
+    m_framebuffer.attachColorTexture( m_color_buffer );
+    m_framebuffer.attachDepthRenderBuffer( m_depth_buffer );
+    m_framebuffer.unbind();
+
+#endif
+#endif
+
+    return true;
 }
 
-ovrFrameTiming HeadMountedDisplay::beginFrame( kvs::UInt32 index )
+void HeadMountedDisplay::update_eye_poses( const kvs::Int64 frame_index )
 {
-    ovrFrameTiming ret;
-    KVS_OVR_CALL( ret = ovrHmd_BeginFrame( m_handler, index ) );
-    return ret;
+#if ( KVS_OVR_MAJOR_VERSION >= 1 ) // Oculus SDK 1.x.x
+    const double timing = this->frameTiming( frame_index );
+    const ovrTrackingState state = this->trackingState( timing );
+
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 17, 0 )
+    const ovrPosef poses[2] = {
+        m_render_descs[0].HmdToEyePose,
+        m_render_descs[1].HmdToEyePose
+    };
+    KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, poses, m_eye_poses ) );
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
+    const ovrVector3f offsets[2] = {
+        m_render_descs[0].HmdToEyeOffset,
+        m_render_descs[1].HmdToEyeOffset
+    };
+    KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, offsets, m_eye_poses ) );
+#else
+    const ovrVector3f offsets[2] = {
+        m_render_descs[0].HmdToEyeViewOffset,
+        m_render_descs[1].HmdToEyeViewOffset
+    };
+    KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, offsets, m_eye_poses ) );
+#endif
+
+#else // Oculus SDK 0.x.x
+    const ovrVector3f offsets[2] = {
+        m_render_descs[0].HmdToEyeViewOffset,
+        m_render_descs[1].HmdToEyeViewOffset
+    };
+
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    const double timing = this->frameTiming( frame_index );
+    const ovrTrackingState state = this->trackingState( timing );
+    KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, offsets, m_eye_poses ) );
+#else
+    KVS_OVR_CALL( ovrHmd_GetEyePoses( m_handler, frame_index, offsets, m_eye_poses, NULL ) );
+#endif
+
+#endif
 }
 
-void HeadMountedDisplay::endFrame( const ovrPosef pose[2], const ovrTexture texture[2] )
+ovrSizei HeadMountedDisplay::fov_texture_size( const ovrEyeType eye, const ovrFovPort fov, const float pixels_per_display_pixel )
 {
-    KVS_OVR_CALL( ovrHmd_EndFrame( m_handler, pose, texture ) );
-}
-
-void HeadMountedDisplay::getEyePoses( kvs::UInt32 index, const ovrVector3f offset[2], ovrPosef poses[2], ovrTrackingState* state )
-{
-    KVS_OVR_CALL( ovrHmd_GetEyePoses( m_handler, index, offset, poses, state ) );
-}
-
-ovrPosef HeadMountedDisplay::posePerEye( ovrEyeType eye )
-{
-    ovrPosef ret;
-    KVS_OVR_CALL( ret = ovrHmd_GetHmdPosePerEye( m_handler, eye ) );
-    return ret;
+    ovrSizei result;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    KVS_OVR_CALL( result = ovr_GetFovTextureSize( m_handler, eye, fov, pixels_per_display_pixel ) );
+#else
+    KVS_OVR_CALL( result = ovrHmd_GetFovTextureSize( m_handler, eye, fov, pixels_per_display_pixel ) );
+#endif
+    return result;
 }
 
 } // end of namespace oculus

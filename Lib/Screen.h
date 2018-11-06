@@ -14,14 +14,7 @@ namespace oculus
 class Screen : public kvs::glut::Screen
 {
 private:
-    kvs::oculus::HeadMountedDisplay m_hmd;
-    kvs::FrameBufferObject m_framebuffer;
-    kvs::Texture2D m_color_texture;
-    kvs::RenderBuffer m_depth_renderbuffer;
-
-    ovrRecti m_viewport[2];
-    ovrGLTexture m_texture[2];
-    ovrEyeRenderDesc m_desc[2];
+    kvs::oculus::HeadMountedDisplay m_hmd; ///< Oculus HMD
 
 public:
     Screen( kvs::oculus::Application* app = 0 );

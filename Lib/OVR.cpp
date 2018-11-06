@@ -1,4 +1,6 @@
 #include "OVR.h"
+#include "Call.h"
+#include "Version.h"
 #include <kvs/Assert>
 #include <kvs/Macro>
 
@@ -9,67 +11,56 @@ namespace kvs
 namespace oculus
 {
 
-namespace internal
+bool Initialize()
 {
-
-bool HasError( ovrHmd hmd, const char* file, const int line, const char* func, const char* command )
-{
-    KVS_ASSERT( hmd );
-    const char* error = ovrHmd_GetLastError( hmd );
-    if ( error == NULL ) { return false; }
-
-    // Output message tag.
-    std::string message_tag( "KVS OVR ERROR" );
-    std::cerr << KVS_MESSAGE_SET_COLOR( KVS_MESSAGE_RED );
-    std::cerr << message_tag;
-    std::cerr << KVS_MESSAGE_RESET_COLOR;
-
-    // Output message with an error string.
-    std::string error_string;
-    while ( *error ) error_string += *error++;
-    std::cerr << ": " << error_string << std::endl;
-    std::cerr << "\t" << "FILE: " << file << " (" << line << ")" << std::endl;
-    std::cerr << "\t" << "FUNC: " << func << std::endl;
-    std::cerr << "\t" << "OVR COMMAND: " << command << std::endl;
-
-    return true;
-}
-
-}
-
-bool Initialize( ovrInitParams const* params )
-{
-    return ovr_Initialize( params ) == ovrTrue;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    ovrResult result;
+    KVS_OVR_CALL( result = ovr_Initialize( NULL ) );
+    return OVR_SUCCESS( result );
+#else
+    ovrBool result;
+    KVS_OVR_CALL( result = ovr_Initialize( NULL ) );
+    return result == ovrTrue;
+#endif
 }
 
 void Shutdown()
 {
-    ovr_Shutdown();
+    KVS_OVR_CALL( ovr_Shutdown() );
+}
+
+int Detect()
+{
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
+    ovrHmdDesc desc;
+    KVS_OVR_CALL( desc = ovr_GetHmdDesc( NULL ) );
+    return desc.Type == ovrHmd_None ? 0 : 1;
+#else
+    int result = 0;
+    KVS_OVR_CALL( result = ovrHmd_Detect() );
+    return result;
+#endif
 }
 
 std::string VersionString()
 {
-    return std::string( ovr_GetVersionString() );
-}
-
-bool InitializeRenderingShimVersion( int requested_minor_version )
-{
-    return ovr_InitializeRenderingShimVersion( requested_minor_version ) == ovrTrue;
-}
-
-bool InitializeRenderingShim()
-{
-    return ovr_InitializeRenderingShim() == ovrTrue;
+    std::string result;
+    KVS_OVR_CALL( result = ovr_GetVersionString() );
+    return result;
 }
 
 double TimeInSecond()
 {
-    return ovr_GetTimeInSeconds();
+    double result;
+    KVS_OVR_CALL( result = ovr_GetTimeInSeconds() );
+    return result;
 }
 
 int TraceMessage( int level, const char* message )
 {
-    return ovr_TraceMessage( level, message );
+    int result;
+    KVS_OVR_CALL( result = ovr_TraceMessage( level, message ) );
+    return result;
 }
 
 } // end of namespace oculus

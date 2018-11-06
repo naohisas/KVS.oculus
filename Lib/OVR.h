@@ -1,6 +1,5 @@
 #pragma once
-
-#include <OVR_CAPI.h>
+#include "Oculus.h"
 #include <string>
 #include <kvs/Vector2>
 #include <kvs/Vector3>
@@ -13,18 +12,10 @@ namespace kvs
 namespace oculus
 {
 
-namespace internal
-{
-
-bool HasError( ovrHmd hmd, const char* file, const int line, const char* func, const char* command );
-
-} // end of namespace internal
-
-bool Initialize( ovrInitParams const* params = 0 );
+bool Initialize();
 void Shutdown();
+int Detect();
 std::string VersionString();
-bool InitializeRenderingShimVersion( int requested_minor_version );
-bool InitializeRenderingShim();
 double TimeInSecond();
 int TraceMessage( int level, const char* message );
 
