@@ -22,7 +22,8 @@ kvs::UInt32 HeadMountedDisplay::availableHmdCaps() const
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     return m_descriptor->AvailableHmdCaps;
-#else
+
+#else // 0.5.0 - 0.6.0
     return m_descriptor->HmdCaps;
 #endif
 }
@@ -31,7 +32,8 @@ kvs::UInt32 HeadMountedDisplay::availableTrackingCaps() const
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     return m_descriptor->AvailableTrackingCaps;
-#else
+
+#else // 0.5.0 - 0.6.0
     return m_descriptor->TrackingCaps;
 #endif
 }
@@ -40,7 +42,8 @@ kvs::UInt32 HeadMountedDisplay::defaultHmdCaps() const
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     return m_descriptor->DefaultHmdCaps;
-#else
+
+#else // 0.5.0 - 0.6.0
     return m_descriptor->HmdCaps;
 #endif
 }
@@ -49,7 +52,8 @@ kvs::UInt32 HeadMountedDisplay::defaultTrackingCaps() const
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     return m_descriptor->DefaultTrackingCaps;
-#else
+
+#else // 0.5.0 - 0.6.0
     return m_descriptor->TrackingCaps;
 #endif
 }
@@ -78,7 +82,7 @@ bool HeadMountedDisplay::create( const int index )
     m_descriptor = m_handler;
     return true;
 
-#else
+#else // 0.5.0
     KVS_OVR_CALL( m_handler = ovrHmd_Create( index ) );
     if ( !m_handler )
     {
@@ -99,7 +103,8 @@ void HeadMountedDisplay::destroy()
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
         KVS_OVR_CALL( ovr_Destroy( m_handler ) );
         if ( m_descriptor ) { delete m_descriptor; }
-#else
+
+#else // 0.5.0 - 0.6.0
         KVS_OVR_CALL( ovrHmd_Destroy( m_handler ) );
 #endif
         m_handler = 0;
@@ -129,7 +134,7 @@ bool HeadMountedDisplay::configureTracking( const kvs::UInt32 supported_caps, co
     KVS_OVR_CALL( result = ovr_ConfigureTracking( m_handler, supported_caps, required_caps ) );
     return OVR_SUCCESS( result );
 
-#else
+#else // 0.5.0 - 0.6.0
     ovrBool result;
     KVS_OVR_CALL( result = ovrHmd_ConfigureTracking( m_handler, supported_caps, required_caps ) );
     return result == ovrTrue;
@@ -147,7 +152,7 @@ bool HeadMountedDisplay::configureRendering()
     KVS_OVR_CALL( m_render_descs[0] = ovrHmd_GetRenderDesc( m_handler, ovrEye_Left, this->defaultEyeFov(0) ) );
     KVS_OVR_CALL( m_render_descs[1] = ovrHmd_GetRenderDesc( m_handler, ovrEye_Right, this->defaultEyeFov(1) ) );
 
-#else
+#else // 0.5.0
     ovrGLConfig config;
     config.OGL.Header.API = ovrRenderAPI_OpenGL;
     config.OGL.Header.BackBufferSize = OVR::Sizei( this->resolution().w, this->resolution().h );
@@ -169,7 +174,7 @@ bool HeadMountedDisplay::configureRendering()
     if ( result == ovrFalse ) { return false; }
 
     KVS_OVR_CALL( ovrHmd_SetEnabledCaps( m_handler, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction ) );
-    // KVS_OVR_CALL( ovrHmd_DismissHSWDisplay( m_handler ) );
+    KVS_OVR_CALL( ovrHmd_DismissHSWDisplay( m_handler ) );
 #endif
 
     this->update_viewport();
@@ -216,7 +221,7 @@ void HeadMountedDisplay::beginFrame( const kvs::Int64 frame_index )
     const GLuint tex_id = reinterpret_cast<ovrGLTexture *>( &color_textures->Textures[ current_index ] )->OGL.TexId;
     KVS_GL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
 
-#else
+#else // 0.5.0
     ovrFrameTiming result;
     KVS_OVR_CALL( result = ovrHmd_BeginFrame( m_handler, frame_index ) );
 
@@ -237,7 +242,7 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
     const ovrTexture* color_texture = &m_color_textures[0].Texture;
     KVS_OVR_CALL( ovrHmd_EndFrame( m_handler, m_eye_poses, color_texture ) );
 
-#else
+#else // 0.6.0 - 1.x.x
     // Set view-scale descriptor.
     ovrViewScaleDesc view_scale_desc;
     view_scale_desc.HmdSpaceToWorldScaleInMeters = 1.0f;
@@ -282,11 +287,13 @@ double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
     double result;
     KVS_OVR_CALL( result = ovr_GetPredictedDisplayTime( m_handler, frame_index ) );
     return result;
-#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
+
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
     ovrFrameTiming timing;
     KVS_OVR_CALL( timing = ovr_GetFrameTiming( m_handler, frame_index ) );
     return timing.DisplayMidpointSeconds;
-#else
+
+#else // 0.5.0
     kvs::IgnoreUnusedVariable( frame_index );
     return kvs::oculus::TimeInSecond();
 #endif
@@ -296,9 +303,11 @@ void HeadMountedDisplay::resetTracking()
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
     KVS_OVR_CALL( ovr_RecenterTrackingOrigin( m_handler ) );
+
 #elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     KVS_OVR_CALL( ovr_RecenterPose( m_handler ) );
-#else
+
+#else // 0.5.0 - 0.6.0
     KVS_OVR_CALL( ovrHmd_RecenterPose( m_handler ) );
 #endif
 }
@@ -309,10 +318,12 @@ ovrTrackingState HeadMountedDisplay::trackingState( const double absolute_time, 
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
     const ovrBool latency_marker = ( latency ) ? ovrTrue : ovrFalse;
     KVS_OVR_CALL( result = ovr_GetTrackingState( m_handler, absolute_time, latency_marker ) );
+
 #elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     kvs::IgnoreUnusedVariable( latency );
     KVS_OVR_CALL( result = ovr_GetTrackingState( m_handler, absolute_time ) );
-#else
+
+#else // 0.5.0 - 0.6.0
     kvs::IgnoreUnusedVariable( latency );
     KVS_OVR_CALL( result = ovrHmd_GetTrackingState( m_handler, absolute_time ) );
 #endif
@@ -345,7 +356,8 @@ void HeadMountedDisplay::update_viewport()
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
     m_layer_data.Viewport[0] = m_viewports[0];
     m_layer_data.Viewport[1] = m_viewports[1];
-#else
+
+#else // 0.5.0
     m_color_textures[0].OGL.Header.API = ovrRenderAPI_OpenGL;
     m_color_textures[0].OGL.Header.TextureSize = m_buffer_size;
     m_color_textures[0].OGL.Header.RenderViewport = m_viewports[0];
@@ -504,12 +516,14 @@ void HeadMountedDisplay::update_eye_poses( const kvs::Int64 frame_index )
         m_render_descs[1].HmdToEyePose
     };
     KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, poses, m_eye_poses ) );
+
 #elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
     const ovrVector3f offsets[2] = {
         m_render_descs[0].HmdToEyeOffset,
         m_render_descs[1].HmdToEyeOffset
     };
     KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, offsets, m_eye_poses ) );
+
 #else
     const ovrVector3f offsets[2] = {
         m_render_descs[0].HmdToEyeViewOffset,
@@ -528,7 +542,8 @@ void HeadMountedDisplay::update_eye_poses( const kvs::Int64 frame_index )
     const double timing = this->frameTiming( frame_index );
     const ovrTrackingState state = this->trackingState( timing );
     KVS_OVR_CALL( ovr_CalcEyePoses( state.HeadPose.ThePose, offsets, m_eye_poses ) );
-#else
+
+#else // 0.5.0
     KVS_OVR_CALL( ovrHmd_GetEyePoses( m_handler, frame_index, offsets, m_eye_poses, NULL ) );
 #endif
 
@@ -540,7 +555,8 @@ ovrSizei HeadMountedDisplay::fov_texture_size( const ovrEyeType eye, const ovrFo
     ovrSizei result;
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
     KVS_OVR_CALL( result = ovr_GetFovTextureSize( m_handler, eye, fov, pixels_per_display_pixel ) );
-#else
+
+#else // 0.5.0 - 0.6.0
     KVS_OVR_CALL( result = ovrHmd_GetFovTextureSize( m_handler, eye, fov, pixels_per_display_pixel ) );
 #endif
     return result;

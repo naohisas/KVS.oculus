@@ -13,7 +13,6 @@ int main( int argc, char** argv )
 {
     kvs::oculus::Application app( argc, argv );
     kvs::oculus::Screen screen( &app );
-    screen.show();
 
     kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData( kvs::Vec3ui( 64, 64, 64 ) );
     const double i = kvs::Math::Mix( volume->minValue(), volume->maxValue(), 0.2 );
