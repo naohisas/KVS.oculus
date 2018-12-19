@@ -100,6 +100,12 @@ void HeadMountedDisplay::destroy()
 {
     if ( m_handler )
     {
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
+        KVS_OVR_CALL( ovr_DestroyTextureSwapChain( m_handler, m_layer_data.ColorTexture[0] ) );
+#elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+        KVS_OVR_CALL( ovr_DestroySwapTextureSet( m_handler, m_layer_data.ColorTexture[0] ) );
+#endif
+
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
         KVS_OVR_CALL( ovr_Destroy( m_handler ) );
         if ( m_descriptor ) { delete m_descriptor; }
