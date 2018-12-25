@@ -29,6 +29,10 @@ inline kvs::Mat4 ToMat4( const OVR::Matrix4f& m )
         m.M[1][0], m.M[1][1], m.M[1][2], m.M[1][3],
         m.M[2][0], m.M[2][1], m.M[2][2], m.M[2][3],
         m.M[3][0], m.M[3][1], m.M[3][2], m.M[3][3] );
+//        m.M[0][0], m.M[1][0], m.M[2][0], m.M[3][0],
+//        m.M[0][1], m.M[1][1], m.M[2][1], m.M[3][1],
+//        m.M[0][2], m.M[1][2], m.M[2][2], m.M[3][2],
+//        m.M[0][3], m.M[1][3], m.M[2][3], m.M[3][3] );
 }
 
 inline OVR::Matrix4f ToMat4( const kvs::Mat3& m )
@@ -37,6 +41,9 @@ inline OVR::Matrix4f ToMat4( const kvs::Mat3& m )
         m[0][0], m[0][1], m[0][2],
         m[1][0], m[1][1], m[1][2],
         m[2][0], m[2][1], m[2][2] );
+//        m[0][0], m[1][0], m[2][0],
+//        m[0][1], m[1][1], m[2][1],
+//        m[0][2], m[1][2], m[2][2] );
 }
 
 inline OVR::Matrix4f ToMat4( const kvs::Mat4& m )
@@ -46,6 +53,10 @@ inline OVR::Matrix4f ToMat4( const kvs::Mat4& m )
         m[1][0], m[1][1], m[1][2], m[1][3],
         m[2][0], m[2][1], m[2][2], m[2][3],
         m[3][0], m[3][1], m[3][2], m[3][3] );
+//        m[0][0], m[1][0], m[2][0], m[3][0],
+//        m[0][1], m[1][1], m[2][1], m[3][1],
+//        m[0][2], m[1][2], m[2][2], m[3][2],
+//        m[0][3], m[1][3], m[2][3], m[3][3] );
 }
 
 }
@@ -133,20 +144,58 @@ void Screen::paintEvent()
             kvs::OpenGL::SetViewport( pos.x, pos.y, size.w, size.h );
 
             // Set projection matrix.
+            const float aspect = static_cast<float>( size.w ) / size.h;
             const float front = scene()->camera()->front();
-            scene()->camera()->setTop( render_desc.Fov.UpTan * front );
-            scene()->camera()->setBottom( -render_desc.Fov.DownTan * front );
-            scene()->camera()->setLeft( -render_desc.Fov.LeftTan * front );
-            scene()->camera()->setRight( render_desc.Fov.RightTan * front );
+            scene()->camera()->setWindowSize( size.w, size.h );
+            if ( aspect >= 1.0f )
+            {
+                scene()->camera()->setTop( render_desc.Fov.UpTan * front );
+                scene()->camera()->setBottom( -render_desc.Fov.DownTan * front );
+                scene()->camera()->setLeft( -render_desc.Fov.LeftTan * front / aspect );
+                scene()->camera()->setRight( render_desc.Fov.RightTan * front / aspect );
+            }
+            else
+            {
+                scene()->camera()->setTop( render_desc.Fov.UpTan * front * aspect );
+                scene()->camera()->setBottom( -render_desc.Fov.DownTan * front * aspect );
+                scene()->camera()->setLeft( -render_desc.Fov.LeftTan * front );
+                scene()->camera()->setRight( render_desc.Fov.RightTan * front );
+            }
             scene()->updateGLProjectionMatrix();
 
             // Set viewing matrix.
+
+		    kvs::Quaternion q(
+                ts.HeadPose.ThePose.Orientation.x,
+                -ts.HeadPose.ThePose.Orientation.y,
+                ts.HeadPose.ThePose.Orientation.z,
+                -ts.HeadPose.ThePose.Orientation.w
+            );
+            kvs::Mat4 r; q.toMatrix( r );
+            kvs::Vec3 p(
+                ts.HeadPose.ThePose.Position.x,
+                -ts.HeadPose.ThePose.Position.y,
+                ts.HeadPose.ThePose.Position.z
+            );
+
+            kvs::Vec3 ep(
+                eye_pose.Position.x,
+                -eye_pose.Position.y,
+                eye_pose.Position.z
+            );
+
+            const float scale = 10.0f;
             const OVR::Matrix4f R0 = rotation0;
-            const OVR::Matrix4f R = R0 * OVR::Matrix4f( ts.HeadPose.ThePose.Orientation );
-            const OVR::Vector3f T = R0.Transform( ts.HeadPose.ThePose.Position );
+//            const OVR::Matrix4f R = R0 * OVR::Matrix4f( ts.HeadPose.ThePose.Orientation );
+            const OVR::Matrix4f R = R0 * OVR::Matrix4f( ::ToMat4( r ) );
+//            const OVR::Vector3f T = R0.Transform( ts.HeadPose.ThePose.Position ) * scale;
+            const OVR::Vector3f T = R0.Transform( ::ToVec3( p ) ) * scale;
             const OVR::Vector3f upvector = R.Transform( upvector0 );
+//            const OVR::Vector3f upvector = R.Transform( upvector0 * OVR::Vector3f( 1, -1, 1 ) );
             const OVR::Vector3f forward = R.Transform( lookat0 - position0 );
-            const OVR::Vector3f position = position0 + T + R.Transform( eye_pose.Position );
+//            const OVR::Vector3f forward = R.Transform( ( lookat0 - position0 ) * OVR::Vector3f( 1, -1, 1 ) );
+//            const OVR::Vector3f position = position0 + T + R.Transform( eye_pose.Position ) * scale;
+            const OVR::Vector3f position = position0 + T + R.Transform( ::ToVec3( ep ) ) * scale;
             const OVR::Vector3f lookat = position + forward;
             scene()->camera()->setPosition( ::ToVec3( position ), ::ToVec3( lookat ), ::ToVec3( upvector ) );
             scene()->updateGLViewingMatrix();
