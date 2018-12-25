@@ -180,6 +180,7 @@ void Screen::paintEvent()
         m_hmd.endFrame( frame_index );
     }
     kvs::OpenGL::Flush();
+    redraw();
 }
 
 } // end of namespace oculus
