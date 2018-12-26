@@ -2,12 +2,14 @@
 #include "Oculus.h"
 #include "Version.h"
 #include <string>
+#include <iostream>
 #include <kvs/Type>
 #include <kvs/Vector2>
 #include <kvs/OpenGL>
 #include <kvs/FrameBufferObject>
 #include <kvs/RenderBuffer>
 #include <kvs/Texture2D>
+#include <kvs/Indent>
 
 
 namespace kvs
@@ -73,6 +75,7 @@ public:
 
     bool create( const int index = 0 );
     void destroy();
+    void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
 
     // Rendering
     bool configureRendering();

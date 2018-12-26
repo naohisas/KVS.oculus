@@ -118,6 +118,15 @@ void HeadMountedDisplay::destroy()
     }
 }
 
+void HeadMountedDisplay::print( std::ostream& os, const kvs::Indent& indent ) const
+{
+    os << indent << "Product name: " << this->productName() << std::endl;
+    os << indent << "Manufacture: " << this->manufacturer() << std::endl;
+    os << indent << "Vender ID: " << this->vendorId() << std::endl;
+    os << indent << "Product ID: " << this->productId() << std::endl;
+    os << indent << "Resolution: " << kvs::oculus::ToVec2i( this->resolution() ) << std::endl;
+}
+
 bool HeadMountedDisplay::configureTracking( const kvs::UInt32 supported_caps, const kvs::UInt32 required_caps )
 {
 #if ( OVR_RPODUCT_VERSION >= 1 ) // Oculus SDK 1.x.x

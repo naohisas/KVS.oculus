@@ -20,6 +20,8 @@ public:
     Screen( kvs::oculus::Application* app = 0 );
     virtual ~Screen();
 
+    const kvs::oculus::HeadMountedDisplay& headMountedDisplay() const { return m_hmd; }
+
     virtual void initializeEvent();
     virtual void paintEvent();
 };
