@@ -164,38 +164,13 @@ void Screen::paintEvent()
             scene()->updateGLProjectionMatrix();
 
             // Set viewing matrix.
-
-		    kvs::Quaternion q(
-                ts.HeadPose.ThePose.Orientation.x,
-                -ts.HeadPose.ThePose.Orientation.y,
-                ts.HeadPose.ThePose.Orientation.z,
-                -ts.HeadPose.ThePose.Orientation.w
-            );
-            kvs::Mat4 r; q.toMatrix( r );
-            kvs::Vec3 p(
-                ts.HeadPose.ThePose.Position.x,
-                -ts.HeadPose.ThePose.Position.y,
-                ts.HeadPose.ThePose.Position.z
-            );
-
-            kvs::Vec3 ep(
-                eye_pose.Position.x,
-                -eye_pose.Position.y,
-                eye_pose.Position.z
-            );
-
             const float scale = 10.0f;
             const OVR::Matrix4f R0 = rotation0;
-//            const OVR::Matrix4f R = R0 * OVR::Matrix4f( ts.HeadPose.ThePose.Orientation );
-            const OVR::Matrix4f R = R0 * OVR::Matrix4f( ::ToMat4( r ) );
-//            const OVR::Vector3f T = R0.Transform( ts.HeadPose.ThePose.Position ) * scale;
-            const OVR::Vector3f T = R0.Transform( ::ToVec3( p ) ) * scale;
+            const OVR::Matrix4f R = R0 * OVR::Matrix4f( ts.HeadPose.ThePose.Orientation );
+            const OVR::Vector3f T = R0.Transform( ts.HeadPose.ThePose.Position ) * scale;
             const OVR::Vector3f upvector = R.Transform( upvector0 );
-//            const OVR::Vector3f upvector = R.Transform( upvector0 * OVR::Vector3f( 1, -1, 1 ) );
             const OVR::Vector3f forward = R.Transform( lookat0 - position0 );
-//            const OVR::Vector3f forward = R.Transform( ( lookat0 - position0 ) * OVR::Vector3f( 1, -1, 1 ) );
-//            const OVR::Vector3f position = position0 + T + R.Transform( eye_pose.Position ) * scale;
-            const OVR::Vector3f position = position0 + T + R.Transform( ::ToVec3( ep ) ) * scale;
+            const OVR::Vector3f position = position0 + T + R.Transform( eye_pose.Position ) * scale;
             const OVR::Vector3f lookat = position + forward;
             scene()->camera()->setPosition( ::ToVec3( position ), ::ToVec3( lookat ), ::ToVec3( upvector ) );
             scene()->updateGLViewingMatrix();

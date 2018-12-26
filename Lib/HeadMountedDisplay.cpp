@@ -270,7 +270,7 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
 	// Set layer eye fov.
     ovrLayerEyeFov layer_eye_fov;
     layer_eye_fov.Header.Type = ovrLayerType_EyeFov;
-    layer_eye_fov.Header.Flags = 0;
+    layer_eye_fov.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
     layer_eye_fov.ColorTexture[0] = m_layer_data.ColorTexture[0];
     layer_eye_fov.ColorTexture[1] = m_layer_data.ColorTexture[1];
     layer_eye_fov.Viewport[0] = m_viewports[0];
