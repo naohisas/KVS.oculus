@@ -5,36 +5,6 @@
 #include <kvs/Platform>
 #include <kvs/IgnoreUnusedVariable>
 
-namespace
-{
-
-inline void Draw()
-{
-    kvs::OpenGL::WithPushedMatrix p1( GL_MODELVIEW );
-    p1.loadIdentity();
-    {
-        kvs::OpenGL::WithPushedMatrix p2( GL_PROJECTION );
-        p2.loadIdentity();
-        {
-            kvs::OpenGL::SetOrtho( 0, 1, 0, 1, -1, 1 );
-            kvs::OpenGL::WithDisabled d1( GL_DEPTH_TEST );
-            kvs::OpenGL::WithDisabled d2( GL_LIGHTING );
-            kvs::OpenGL::WithEnabled e1( GL_TEXTURE_2D );
-            {
-                kvs::OpenGL::Begin( GL_QUADS );
-                kvs::OpenGL::Color( kvs::Vec4::All( 1.0 ) );
-                kvs::OpenGL::TexCoordVertex( kvs::Vec2( 1, 1 ), kvs::Vec2( 1, 1 ) );
-                kvs::OpenGL::TexCoordVertex( kvs::Vec2( 0, 1 ), kvs::Vec2( 0, 1 ) );
-                kvs::OpenGL::TexCoordVertex( kvs::Vec2( 0, 0 ), kvs::Vec2( 0, 0 ) );
-                kvs::OpenGL::TexCoordVertex( kvs::Vec2( 1, 0 ), kvs::Vec2( 1, 0 ) );
-                kvs::OpenGL::End();
-            }
-        }
-    }
-}
-
-}
-
 
 namespace kvs
 {
@@ -98,7 +68,6 @@ bool HeadMountedDisplay::create( const int index )
 
     m_descriptor = new ovrHmdDesc;
     KVS_OVR_CALL( *m_descriptor = ovr_GetHmdDesc( m_handler ) );
-    return true;
 
 #elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
     ovrResult result;
@@ -110,7 +79,6 @@ bool HeadMountedDisplay::create( const int index )
     }
 
     m_descriptor = m_handler;
-    return true;
 
 #else // 0.5.0
     KVS_OVR_CALL( m_handler = ovrHmd_Create( index ) );
@@ -121,18 +89,20 @@ bool HeadMountedDisplay::create( const int index )
     }
 
     m_descriptor = m_handler;
-    return true;
 
 #endif
+    return true;
 }
 
 void HeadMountedDisplay::destroy()
 {
     if ( m_handler )
     {
-#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
         if ( m_mirror_fbo ) { KVS_GL_CALL( glDeleteFramebuffers( 1, &m_mirror_fbo ) ); }
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
         if ( m_mirror_tex ) { KVS_OVR_CALL( ovr_DestroyMirrorTexture( m_handler, m_mirror_tex ) ); }
+#else
+        if ( m_mirror_tex ) { KVS_OVR_CALL( ovrHmd_DestroyMirrorTexture( m_handler, m_mirror_tex ) ); }
 #endif
 
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
@@ -228,7 +198,7 @@ bool HeadMountedDisplay::configureRendering()
 #endif
 
     this->update_viewport();
-    return this->initialize_render_texture();
+    return this->initialize_render_texture() && this->initialize_mirror_texture();
 }
 
 void HeadMountedDisplay::beginFrame( const kvs::Int64 frame_index )
@@ -355,20 +325,25 @@ double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
 
 void HeadMountedDisplay::renderToMirror()
 {
-#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
-    kvs::OpenGL::SetDrawBuffer( GL_FRONT );
+    const int width = this->resolution().w;
+    const int height = this->resolution().h;
 
+    kvs::OpenGL::SetDrawBuffer( GL_FRONT );
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
     GLuint tex_id;
     KVS_OVR_CALL( ovr_GetMirrorTextureBufferGL( m_handler, m_mirror_tex, &tex_id ) );
-
-    const size_t width = this->resolution().w;
-    const size_t height = this->resolution().h;
     KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
     KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
     KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
     KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+#else
+	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+	KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
+	KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
+	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 #endif
 }
+
 void HeadMountedDisplay::resetTracking()
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
@@ -413,7 +388,6 @@ void HeadMountedDisplay::update_viewport()
     const ovrSizei tex1 = this->fov_texture_size( eye1, fov1, 1.0f );
 
     // Rendering buffer size.
-    //ovrSizei m_buffer_size;
     m_buffer_size.w = tex0.w + tex1.w;
     m_buffer_size.h = kvs::Math::Max( tex0.h, tex1.h );
 
@@ -496,25 +470,6 @@ bool HeadMountedDisplay::initialize_render_texture()
     m_framebuffer.attachDepthRenderBuffer( m_depth_buffer );
     m_framebuffer.unbind();
 
-    // Mirror texture descriptor.
-    const ovrMirrorTextureDesc mirror = {
-        OVR_FORMAT_R8G8B8A8_UNORM_SRGB, // Format
-        this->resolution().w, // Width
-        this->resolution().h, // Height
-        0
-    };
-
-    // Create a mirror texture.
-    KVS_OVR_CALL( result = ovr_CreateMirrorTextureGL( m_handler, &mirror, &m_mirror_tex ) );
-    if ( OVR_FAILURE( result ) )
-    {
-        kvsMessageError( "Cannot create mirror texture." );
-        return false;
-    }
-
-    // Create a mirror frame buffer object.
-    KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) );
-
 #else // Oculus SDK 0.x.x
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
     // Create color textures
@@ -588,6 +543,57 @@ bool HeadMountedDisplay::initialize_render_texture()
     m_framebuffer.unbind();
 
 #endif
+#endif
+
+    return true;
+}
+
+bool HeadMountedDisplay::initialize_mirror_texture()
+{
+    ovrResult result;
+    const int width = this->resolution().w;
+    const int height = this->resolution().h;
+
+#if ( KVS_OVR_MAJOR_VERSION >= 1 ) // Oculus SDK 1.x.x
+    // Mirror texture descriptor.
+    const ovrMirrorTextureDesc mirror = {
+        OVR_FORMAT_R8G8B8A8_UNORM_SRGB, // Format
+        width, // Width
+        height, // Height
+        0
+    };
+
+    // Create a mirror texture.
+    KVS_OVR_CALL( result = ovr_CreateMirrorTextureGL( m_handler, &mirror, &m_mirror_tex ) );
+    if ( OVR_FAILURE( result ) )
+    {
+        kvsMessageError( "Cannot create mirror texture." );
+        return false;
+    }
+
+    // Create a mirror frame buffer object.
+    KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) );
+
+#else // Oculus SDK 0.x.x
+
+    // Create a mirror texture.
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )
+    KVS_OVR_CALL( result = ovr_CreateMirrorTextureGL( m_handler, GL_SRGB8_ALPHA8, width, height, reinterpret_cast<ovrTexture **>(&m_mirror_tex) ) );
+#else
+    KVS_OVR_CALL( result = ovrHmd_CreateMirrorTextureGL( m_handler, GL_SRGB8_ALPHA8, width, height, reinterpret_cast<ovrTexture **>(&m_mirror_tex) ) );
+#endif
+    if ( OVR_FAILURE( result ) )
+    {
+        kvsMessageError( "Cannot create mirror texture." );
+        return false;
+    }
+
+    // Create a mirror frame buffer object.
+	KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) );
+	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+	KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mirror_txt->OGL.TexId, 0 ) );
+	KVS_GL_CALL( glFramebufferRenderbuffer( GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0 ) );
+	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 #endif
 
     return true;

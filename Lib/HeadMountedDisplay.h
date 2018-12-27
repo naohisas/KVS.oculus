@@ -52,7 +52,7 @@ private:
     ovrGLTexture m_color_textures[2]; ///< texture information of each eye
 #endif
 
-    // Rendering mirror buffer.
+    // Mirror buffer.
     GLuint m_mirror_fbo;
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
     ovrMirrorTexture m_mirror_tex;
@@ -99,6 +99,7 @@ public:
 
 private:
     bool initialize_render_texture();
+    bool initialize_mirror_texture();
     void update_eye_poses( const kvs::Int64 frame_index );
     void update_viewport();
     ovrSizei fov_texture_size( const ovrEyeType eye, const ovrFovPort fov, const float pixels_per_display_pixel );
