@@ -333,19 +333,6 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
     KVS_OVR_CALL( ovrHmd_SubmitFrame( m_handler, frame_index, &view_scale_desc, &layers, 1 ) );
 #endif
 #endif
-
-#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
-    // Render to mirror framebuffer.
-    GLuint tex_id;
-    KVS_OVR_CALL( ovr_GetMirrorTextureBufferGL( m_handler, m_mirror_tex, &tex_id ) );
-
-    const size_t width = this->resolution().w;
-    const size_t height = this->resolution().h;
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
-    KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
-    KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
-#endif
 }
 
 double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
@@ -366,6 +353,22 @@ double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
 #endif
 }
 
+void HeadMountedDisplay::renderToMirror()
+{
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
+    kvs::OpenGL::SetDrawBuffer( GL_FRONT );
+
+    GLuint tex_id;
+    KVS_OVR_CALL( ovr_GetMirrorTextureBufferGL( m_handler, m_mirror_tex, &tex_id ) );
+
+    const size_t width = this->resolution().w;
+    const size_t height = this->resolution().h;
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+    KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+    KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+#endif
+}
 void HeadMountedDisplay::resetTracking()
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 3, 0 )
@@ -509,7 +512,8 @@ bool HeadMountedDisplay::initialize_render_texture()
         return false;
     }
 
-    KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) ); // create
+    // Create a mirror frame buffer object.
+    KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) );
 
 #else // Oculus SDK 0.x.x
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 6, 0 )

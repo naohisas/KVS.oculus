@@ -203,6 +203,8 @@ void Screen::paintEvent()
 
         m_hmd.endFrame( frame_index );
     }
+    m_hmd.renderToMirror();
+
     kvs::OpenGL::Flush();
     redraw();
 }

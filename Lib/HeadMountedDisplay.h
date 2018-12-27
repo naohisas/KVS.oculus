@@ -90,6 +90,7 @@ public:
     void beginFrame( const kvs::Int64 frame_index );
     void endFrame( const kvs::Int64 frame_index );
     double frameTiming( const kvs::Int64 frame_index );
+    void renderToMirror();
 
     // Tracking
     bool configureTracking( const kvs::UInt32 supported_caps, const kvs::UInt32 required_caps );
