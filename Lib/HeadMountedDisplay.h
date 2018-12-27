@@ -52,6 +52,14 @@ private:
     ovrGLTexture m_color_textures[2]; ///< texture information of each eye
 #endif
 
+    // Rendering mirror buffer.
+    GLuint m_mirror_fbo;
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
+    ovrMirrorTexture m_mirror_tex;
+#else
+    ovrGLTexture* m_mirror_tex;
+#endif
+
 public:
     HeadMountedDisplay();
 
