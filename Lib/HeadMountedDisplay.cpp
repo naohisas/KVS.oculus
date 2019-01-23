@@ -357,7 +357,7 @@ void HeadMountedDisplay::resetTracking()
 #endif
 }
 
-ovrTrackingState HeadMountedDisplay::trackingState( const double absolute_time, const bool latency )
+ovrTrackingState HeadMountedDisplay::trackingState( const double absolute_time, const bool latency ) const
 {
     ovrTrackingState result;
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
