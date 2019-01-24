@@ -76,6 +76,12 @@ Screen::~Screen()
    m_hmd.destroy();
 }
 
+void Screen::show( const bool fullscreen )
+{
+    kvs::glut::Screen::show();
+    if ( fullscreen ) { kvs::glut::Screen::showFullScreen(); }
+}
+
 void Screen::initializeEvent()
 {
     kvs::glut::Screen::initializeEvent();

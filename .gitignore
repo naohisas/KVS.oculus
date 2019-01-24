@@ -32,3 +32,4 @@
 
 App/Test/Test
 *.pdb
+*.manifest

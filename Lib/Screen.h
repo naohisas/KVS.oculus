@@ -22,6 +22,7 @@ public:
 
     const kvs::oculus::HeadMountedDisplay& headMountedDisplay() const { return m_hmd; }
 
+    virtual void show( const bool fullscreen = true );
     virtual void initializeEvent();
     virtual void paintEvent();
 };
