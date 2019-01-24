@@ -7,6 +7,7 @@
 #include <Lib/HeadMountedDisplay.h>
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
+#include "TouchEventListener.h"
 
 
 int main( int argc, char** argv )
@@ -31,6 +32,8 @@ int main( int argc, char** argv )
     screen.registerObject( object, new kvs::Bounds() );
     screen.registerObject( object );
     screen.show();
+
+    kvs::oculus::TouchEventListener event( &screen );
 
     return app.run();
 }

@@ -7,6 +7,7 @@
 #include <kvs/RendererManager>
 #include <kvs/IDManager>
 #include <kvs/RendererBase>
+#include <kvs/PaintEvent>
 
 
 namespace
@@ -84,7 +85,7 @@ void Screen::show( const bool fullscreen )
 
 void Screen::initializeEvent()
 {
-    kvs::glut::Screen::initializeEvent();
+//    kvs::glut::Screen::initializeEvent();
 
     // Configure tracking.
     const kvs::UInt32 trac_caps =
@@ -101,6 +102,8 @@ void Screen::initializeEvent()
     {
         kvsMessageError("Failed rendering configuration.");
     }
+
+    kvs::glut::Screen::initializeEvent();
 }
 
 void Screen::paintEvent()
@@ -200,8 +203,14 @@ void Screen::paintEvent()
 //        scene()->camera()->setWindowSize( camera_window_width, camera_window_height );
 
         m_hmd.endFrame( frame_index );
+
+        // Render to the frame buffer.
+        m_hmd.renderToMirror();
+
+        kvs::PaintEvent event;
+        BaseClass::eventHandler()->notify( &event );
     }
-    m_hmd.renderToMirror();
+//    m_hmd.renderToMirror();
 
     kvs::OpenGL::Flush();
     redraw();
