@@ -20,6 +20,7 @@ public:
     void initialize();
     bool hasRight() const;
     bool hasLeft() const;
+    ovrTrackingState trackingState( const kvs::Int64 frame_index = 0 ) const;
 };
 
 } // end of namespace oculus

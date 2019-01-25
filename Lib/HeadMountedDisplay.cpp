@@ -305,7 +305,7 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
 #endif
 }
 
-double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index )
+double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index ) const
 {
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 8, 0 )
     double result;

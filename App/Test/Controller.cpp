@@ -33,6 +33,12 @@ bool Controller::hasLeft() const
     return ( m_types & ovrControllerType_LTouch ) == ovrControllerType_LTouch;
 }
 
+ovrTrackingState Controller::trackingState( const kvs::Int64 frame_index ) const
+{
+    const double frame_timing = m_hmd.frameTiming( frame_index );
+    return m_hmd.trackingState( frame_timing );
+}
+
 } // end of namespace oculus
 
 } // end of namespace kvs

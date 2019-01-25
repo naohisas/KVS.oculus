@@ -89,7 +89,7 @@ public:
     bool configureRendering();
     void beginFrame( const kvs::Int64 frame_index );
     void endFrame( const kvs::Int64 frame_index );
-    double frameTiming( const kvs::Int64 frame_index );
+    double frameTiming( const kvs::Int64 frame_index ) const;
     void renderToMirror();
 
     // Tracking
