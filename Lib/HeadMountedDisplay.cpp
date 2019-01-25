@@ -375,6 +375,13 @@ ovrTrackingState HeadMountedDisplay::trackingState( const double absolute_time, 
     return result;
 }
 
+ovrInputState HeadMountedDisplay::inputState( const ovrControllerType type ) const
+{
+    ovrInputState result;
+    KVS_OVR_CALL( ovr_GetInputState( m_handler, type, &result ) );
+    return result;
+}
+
 void HeadMountedDisplay::update_viewport()
 {
     // Left eye info.

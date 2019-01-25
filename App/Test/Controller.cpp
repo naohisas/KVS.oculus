@@ -39,6 +39,11 @@ ovrTrackingState Controller::trackingState( const kvs::Int64 frame_index ) const
     return m_hmd.trackingState( frame_timing );
 }
 
+ovrInputState Controller::inputState( const ovrControllerType type ) const
+{
+    return m_hmd.inputState( type );
+}
+
 } // end of namespace oculus
 
 } // end of namespace kvs

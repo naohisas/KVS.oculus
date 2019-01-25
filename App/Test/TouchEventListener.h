@@ -11,6 +11,11 @@ namespace oculus
 
 class TouchEventListener : public kvs::oculus::EventListener
 {
+private:
+    bool m_is_grabbed;
+    bool m_both_is_grabbed;
+    float m_touch_distance;
+
 public:
     TouchEventListener( kvs::oculus::Screen* screen );
 

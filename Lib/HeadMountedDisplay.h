@@ -96,6 +96,7 @@ public:
     bool configureTracking( const kvs::UInt32 supported_caps, const kvs::UInt32 required_caps );
     void resetTracking();
     ovrTrackingState trackingState( const double absolute_time = 0.0, const bool latency = true ) const;
+    ovrInputState inputState( const ovrControllerType type ) const;
 
 private:
     bool initialize_render_texture();

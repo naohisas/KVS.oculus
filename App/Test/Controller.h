@@ -21,6 +21,7 @@ public:
     bool hasRight() const;
     bool hasLeft() const;
     ovrTrackingState trackingState( const kvs::Int64 frame_index = 0 ) const;
+    ovrInputState inputState( const ovrControllerType type ) const;
 };
 
 } // end of namespace oculus

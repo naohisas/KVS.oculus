@@ -31,7 +31,7 @@ int main( int argc, char** argv )
 
     screen.registerObject( object, new kvs::Bounds() );
     screen.registerObject( object );
-    screen.show();
+    screen.show(false);
 
     kvs::oculus::TouchEventListener event( &screen );
 
