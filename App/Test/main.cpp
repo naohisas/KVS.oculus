@@ -7,7 +7,7 @@
 #include <Lib/HeadMountedDisplay.h>
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
-#include "TouchEventListener.h"
+#include <Lib/TouchEventListener.h>
 
 
 int main( int argc, char** argv )

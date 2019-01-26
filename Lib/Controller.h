@@ -1,5 +1,5 @@
 #pragma once
-#include <Lib/HeadMountedDisplay.h>
+#include "HeadMountedDisplay.h"
 
 
 namespace kvs
@@ -11,7 +11,7 @@ namespace oculus
 class Controller
 {
 private:
-    const kvs::oculus::HeadMountedDisplay& m_hmd; ///< hmd
+    const kvs::oculus::HeadMountedDisplay& m_hmd; ///< head mounted display (hmd)
     unsigned int m_types; ///< controller types connected to the hmd
 
 public:

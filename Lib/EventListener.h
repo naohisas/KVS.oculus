@@ -1,6 +1,6 @@
 #pragma once
 #include <kvs/EventListener>
-#include <Lib/Screen.h>
+#include "Screen.h"
 #include "Controller.h"
 
 
@@ -13,7 +13,7 @@ namespace oculus
 class EventListener : public kvs::EventListener
 {
 private:
-    kvs::oculus::Controller m_controller;
+    kvs::oculus::Controller m_controller; ///< controller
 
 public:
     EventListener( kvs::oculus::Screen* screen );

@@ -1,5 +1,5 @@
 #include "TouchEventListener.h"
-#include <Lib/OVR.h>
+#include "OVR.h"
 
 
 namespace kvs
@@ -12,7 +12,10 @@ TouchEventListener::TouchEventListener( kvs::oculus::Screen* screen ):
     kvs::oculus::EventListener( screen ),
     m_is_grabbed( false ),
     m_both_is_grabbed( false ),
-    m_touch_distance( 0.0f )
+    m_touch_distance( 0.0f ),
+    m_rotation_factor( 1200.0f ),
+    m_translation_factor( 2000.0f ),
+    m_scaling_factor( 10000.0f )
 {
     if ( !controller().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
     if ( !controller().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
@@ -47,16 +50,17 @@ void TouchEventListener::frameEvent()
     if ( input_state.IndexTrigger[ovrHand_Left] > 0.5f ) { std::cout << "Grip Left IndexTrigger" << std::endl; }
     if ( input_state.IndexTrigger[ovrHand_Right] > 0.5f ) { std::cout << "Grip Right IndexTrigger" << std::endl; }
 
-    // Rotation
     {
         const kvs::Vec3 right_p = kvs::oculus::ToVec3( hands[ovrHand_Right].Position );
-        const kvs::Vec2i right_m( kvs::Vec2( right_p.x(), -right_p.y() ) * 1200.0f );
+        const kvs::Vec2i right_m( kvs::Vec2( right_p.x(), -right_p.y() ) * m_rotation_factor );
 
         const kvs::Vec3 left_p = kvs::oculus::ToVec3( hands[ovrHand_Left].Position );
-        const kvs::Vec2i left_m( kvs::Vec2( left_p.x(), -left_p.y() ) * 2000.0f );
+        const kvs::Vec2i left_m( kvs::Vec2( left_p.x(), -left_p.y() ) * m_translation_factor );
 
         const bool right_grabbed = input_state.HandTrigger[ovrHand_Right] > 0.5;
         const bool left_grabbed = input_state.HandTrigger[ovrHand_Left] > 0.5;
+
+        // Rotation.
         if ( right_grabbed && !left_grabbed )
         {
             if ( m_is_grabbed )
@@ -76,6 +80,8 @@ void TouchEventListener::frameEvent()
                 }
             }
         }
+
+        // Translation.
         else if ( left_grabbed && !right_grabbed )
         {
             if ( m_is_grabbed )
@@ -95,13 +101,15 @@ void TouchEventListener::frameEvent()
                 }
             }
         }
+
+        // Scaling.
         else if ( right_grabbed && left_grabbed )
         {
             if ( m_both_is_grabbed )
             {
                 const float touch_distance = ( right_p - left_p ).length();
                 const float d = touch_distance - m_touch_distance;
-                scene()->wheelFunction( static_cast<int>( d * 10000 ) );
+                scene()->wheelFunction( static_cast<int>( d * m_scaling_factor ) );
                 scene()->updateXform();
                 m_touch_distance = touch_distance;
             }
@@ -114,13 +122,15 @@ void TouchEventListener::frameEvent()
                 if ( scene()->mouse()->operationMode() == kvs::Mouse::Rotation )
                 {
                     scene()->mouseReleaseFunction( right_m.x(), right_m.y() );
-                }   
+                }
                 else if ( scene()->mouse()->operationMode() == kvs::Mouse::Translation )
                 {
                     scene()->mouseReleaseFunction( left_m.x(), left_m.y() );
-                } 
+                }
             }
         }
+
+        // Released.
         else
         {
             m_is_grabbed = false;
@@ -134,8 +144,6 @@ void TouchEventListener::frameEvent()
             }
         }
     }
-
-
 }
 
 } // end of namespace oculus

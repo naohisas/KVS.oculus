@@ -206,18 +206,18 @@ void HeadMountedDisplay::beginFrame( const kvs::Int64 frame_index )
 #if ( KVS_OVR_MAJOR_VERSION >= 1 ) // Oculus SDK 1.x.x
     ovrResult result;
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 19, 0 )
-	KVS_OVR_CALL( result = ovr_WaitToBeginFrame( m_handler, frame_index ) );
+    KVS_OVR_CALL( result = ovr_WaitToBeginFrame( m_handler, frame_index ) );
     KVS_OVR_CALL( result = ovr_BeginFrame( m_handler, frame_index ) );
     KVS_ASSERT( OVR_SUCCESS( result ) );
 #endif
 
     // Get the crrent color texture ID.
     const ovrTextureSwapChain& color_textures = m_layer_data.ColorTexture[0];
-	int current_index = 0;
+    int current_index = 0;
     KVS_OVR_CALL( result = ovr_GetTextureSwapChainCurrentIndex( m_handler, color_textures, &current_index ) );
     KVS_ASSERT( OVR_SUCCESS( result ) );
-	
-	// Bind the frame buffer object.
+
+    // Bind the frame buffer object.
     m_framebuffer.bind();
     GLuint tex_id = 0;
     KVS_OVR_CALL( result = ovr_GetTextureSwapChainBufferGL( m_handler, color_textures, current_index, &tex_id ) );
@@ -264,8 +264,8 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
     KVS_OVR_CALL( ovrHmd_EndFrame( m_handler, m_eye_poses, color_texture ) );
 
 #else // 0.6.0 - 1.x.x
-	m_framebuffer.unbind();
-	KVS_OVR_CALL( ovr_CommitTextureSwapChain( m_handler, m_layer_data.ColorTexture[0] ) );
+    m_framebuffer.unbind();
+    KVS_OVR_CALL( ovr_CommitTextureSwapChain( m_handler, m_layer_data.ColorTexture[0] ) );
 
     // Set view-scale descriptor.
     ovrViewScaleDesc view_scale_desc;
@@ -281,7 +281,7 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
     view_scale_desc.HmdToEyeViewOffset[1] = m_render_descs[1].HmdToEyeViewOffset;
 #endif
 
-	// Set layer eye fov.
+    // Set layer eye fov.
     ovrLayerEyeFov layer_eye_fov;
     layer_eye_fov.Header.Type = ovrLayerType_EyeFov;
     layer_eye_fov.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
@@ -294,7 +294,7 @@ void HeadMountedDisplay::endFrame( const kvs::Int64 frame_index )
     layer_eye_fov.RenderPose[0] = m_eye_poses[0];
     layer_eye_fov.RenderPose[1] = m_eye_poses[1];
 
-	ovrLayerHeader* layers = &layer_eye_fov.Header;
+    ovrLayerHeader* layers = &layer_eye_fov.Header;
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 19, 0 )
     KVS_OVR_CALL( ovr_EndFrame( m_handler, frame_index, &view_scale_desc, &layers, 1 ) );
 #elif KVS_OVR_VERSION_GREATER_OR_EQUAL( 0, 7, 0 )
@@ -337,10 +337,10 @@ void HeadMountedDisplay::renderToMirror()
     KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
     KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 #else
-	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
-	KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
-	KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
-	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+    KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
+    KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 #endif
 }
 
@@ -596,11 +596,11 @@ bool HeadMountedDisplay::initialize_mirror_texture()
     }
 
     // Create a mirror frame buffer object.
-	KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) );
-	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
-	KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mirror_txt->OGL.TexId, 0 ) );
-	KVS_GL_CALL( glFramebufferRenderbuffer( GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0 ) );
-	KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+    KVS_GL_CALL( glGenFramebuffers( 1, &m_mirror_fbo ) );
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+    KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mirror_txt->OGL.TexId, 0 ) );
+    KVS_GL_CALL( glFramebufferRenderbuffer( GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0 ) );
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 #endif
 
     return true;
