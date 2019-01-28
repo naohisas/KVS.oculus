@@ -8,7 +8,7 @@ namespace oculus
 {
 
 EventListener::EventListener( kvs::oculus::Screen* screen ):
-    m_controller( screen->headMountedDisplay() )
+    m_input_device( screen->headMountedDisplay() )
 {
     setScreen( screen );
     setScene( screen->scene() );
@@ -22,7 +22,7 @@ void EventListener::onEvent( kvs::EventBase* event )
     {
     case kvs::EventBase::InitializeEvent:
     {
-        m_controller.initialize();
+        m_input_device.initialize();
         this->initializeEvent();
         break;
     }

@@ -8,14 +8,14 @@ namespace kvs
 namespace oculus
 {
 
-class Controller
+class InputDevice
 {
 private:
     const kvs::oculus::HeadMountedDisplay& m_hmd; ///< head mounted display (hmd)
     unsigned int m_types; ///< controller types connected to the hmd
 
 public:
-    Controller( const kvs::oculus::HeadMountedDisplay& hmd );
+    InputDevice( const kvs::oculus::HeadMountedDisplay& hmd );
 
     void initialize();
     bool hasRight() const;

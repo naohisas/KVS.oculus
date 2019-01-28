@@ -17,30 +17,30 @@ TouchEventListener::TouchEventListener( kvs::oculus::Screen* screen ):
     m_translation_factor( 5000.0f ),
     m_scaling_factor( 30000.0f )
 {
-    if ( !controller().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
-    if ( !controller().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
+    if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
+    if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
 }
 
 void TouchEventListener::initializeEvent()
 {
     std::cout << "TouchEventListener::initializeEvent()" << std::endl;
-    if ( !controller().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
-    if ( !controller().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
+    if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
+    if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
 }
 
 void TouchEventListener::frameEvent()
 {
     std::cout << "TouchEventListener::frameEvent()" << std::endl;
-    if ( !controller().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
-    if ( !controller().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
+    if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
+    if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
 
-    const ovrTrackingState ts = controller().trackingState( 0 );
+    const ovrTrackingState ts = inputDevice().trackingState( 0 );
     ovrPosef hands[2] = { ts.HandPoses[ovrHand_Left].ThePose, ts.HandPoses[ovrHand_Right].ThePose };
 
     std::cout << "  Position (R): " << kvs::oculus::ToVec3( hands[ovrHand_Left].Position ) << std::endl;
     std::cout << "  Position (L): " << kvs::oculus::ToVec3( hands[ovrHand_Right].Position ) << std::endl;
 
-    ovrInputState input_state = controller().inputState( ovrControllerType_Touch );
+    ovrInputState input_state = inputDevice().inputState( ovrControllerType_Touch );
     if ( input_state.Buttons & ovrButton_A ) { std::cout << "Pressed A" << std::endl; }
     if ( input_state.Buttons & ovrButton_B ) { std::cout << "Pressed B" << std::endl; }
     if ( input_state.Buttons & ovrButton_X ) { std::cout << "Pressed X" << std::endl; }

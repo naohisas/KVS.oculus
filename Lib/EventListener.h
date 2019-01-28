@@ -1,7 +1,7 @@
 #pragma once
 #include <kvs/EventListener>
 #include "Screen.h"
-#include "Controller.h"
+#include "InputDevice.h"
 
 
 namespace kvs
@@ -13,7 +13,7 @@ namespace oculus
 class EventListener : public kvs::EventListener
 {
 private:
-    kvs::oculus::Controller m_controller; ///< controller
+    kvs::oculus::InputDevice m_input_device; ///< input device
 
 public:
     EventListener( kvs::oculus::Screen* screen );
@@ -22,7 +22,7 @@ public:
     virtual void frameEvent() {}
 
 protected:
-    kvs::oculus::Controller& controller() { return m_controller; }
+    kvs::oculus::InputDevice& inputDevice() { return m_input_device; }
 
 private:
     void onEvent( kvs::EventBase* event );

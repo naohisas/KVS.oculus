@@ -1,4 +1,4 @@
-#include "Controller.h"
+#include "InputDevice.h"
 #include "OVR.h"
 #include "Call.h"
 
@@ -9,34 +9,34 @@ namespace kvs
 namespace oculus
 {
 
-Controller::Controller( const kvs::oculus::HeadMountedDisplay& hmd ):
+InputDevice::InputDevice( const kvs::oculus::HeadMountedDisplay& hmd ):
     m_hmd( hmd ),
     m_types( 0 )
 {
 }
 
-void Controller::initialize()
+void InputDevice::initialize()
 {
     KVS_OVR_CALL( m_types = ovr_GetConnectedControllerTypes( m_hmd.handler() ) );
 }
 
-bool Controller::hasRight() const
+bool InputDevice::hasRight() const
 {
     return ( m_types & ovrControllerType_RTouch ) == ovrControllerType_RTouch;
 }
 
-bool Controller::hasLeft() const
+bool InputDevice::hasLeft() const
 {
     return ( m_types & ovrControllerType_LTouch ) == ovrControllerType_LTouch;
 }
 
-ovrTrackingState Controller::trackingState( const kvs::Int64 frame_index ) const
+ovrTrackingState InputDevice::trackingState( const kvs::Int64 frame_index ) const
 {
     const double frame_timing = m_hmd.frameTiming( frame_index );
     return m_hmd.trackingState( frame_timing );
 }
 
-ovrInputState Controller::inputState( const ovrControllerType type ) const
+ovrInputState InputDevice::inputState( const ovrControllerType type ) const
 {
     return m_hmd.inputState( type );
 }
