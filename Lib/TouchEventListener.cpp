@@ -107,16 +107,16 @@ void TouchEventListener::frameEvent()
         {
             if ( m_both_is_grabbed )
             {
-                const float touch_distance = ( right_p - left_p ).length();
-                const float d = touch_distance - m_touch_distance;
+                const double touch_distance = ( right_p - left_p ).length();
+                const double d = touch_distance - m_touch_distance;
                 scene()->wheelFunction( static_cast<int>( d * m_scaling_factor ) );
                 scene()->updateXform();
-                m_touch_distance = touch_distance;
+                m_touch_distance = static_cast<float>( touch_distance );
             }
             else
             {
                 m_both_is_grabbed = true;
-                m_touch_distance = ( right_p - left_p ).length();
+                m_touch_distance = static_cast<float>( ( right_p - left_p ).length() );
 
                 m_is_grabbed = false;
                 if ( scene()->mouse()->operationMode() == kvs::Mouse::Rotation )
