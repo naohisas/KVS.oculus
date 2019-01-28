@@ -1,4 +1,4 @@
-#include "TouchEventListener.h"
+#include "TouchController.h"
 #include "OVR.h"
 
 
@@ -8,8 +8,8 @@ namespace kvs
 namespace oculus
 {
 
-TouchEventListener::TouchEventListener( kvs::oculus::Screen* screen ):
-    kvs::oculus::EventListener( screen ),
+TouchController::TouchController( kvs::oculus::Screen* screen ):
+    kvs::oculus::ControllerBase( screen ),
     m_is_grabbed( false ),
     m_both_is_grabbed( false ),
     m_touch_distance( 0.0f ),
@@ -21,14 +21,14 @@ TouchEventListener::TouchEventListener( kvs::oculus::Screen* screen ):
     if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
 }
 
-void TouchEventListener::initializeEvent()
+void TouchController::initializeEvent()
 {
     std::cout << "TouchEventListener::initializeEvent()" << std::endl;
     if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
     if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
 }
 
-void TouchEventListener::frameEvent()
+void TouchController::frameEvent()
 {
     std::cout << "TouchEventListener::frameEvent()" << std::endl;
     if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }

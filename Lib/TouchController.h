@@ -1,5 +1,5 @@
 #pragma once
-#include "EventListener.h"
+#include "ControllerBase.h"
 #include "Screen.h"
 
 
@@ -9,7 +9,7 @@ namespace kvs
 namespace oculus
 {
 
-class TouchEventListener : public kvs::oculus::EventListener
+class TouchController : public kvs::oculus::ControllerBase
 {
 private:
     bool m_is_grabbed;
@@ -20,7 +20,7 @@ private:
     float m_scaling_factor;
 
 public:
-    TouchEventListener( kvs::oculus::Screen* screen );
+    TouchController( kvs::oculus::Screen* screen );
 
     float rotationFactor() const { return m_rotation_factor; }
     float translationFactor() const { return m_translation_factor; }

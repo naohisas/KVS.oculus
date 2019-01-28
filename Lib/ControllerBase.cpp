@@ -1,4 +1,4 @@
-#include "EventListener.h"
+#include "ControllerBase.h"
 
 
 namespace kvs
@@ -7,7 +7,7 @@ namespace kvs
 namespace oculus
 {
 
-EventListener::EventListener( kvs::oculus::Screen* screen ):
+ControllerBase::ControllerBase( kvs::oculus::Screen* screen ):
     m_input_device( screen->headMountedDisplay() )
 {
     setScreen( screen );
@@ -16,7 +16,7 @@ EventListener::EventListener( kvs::oculus::Screen* screen ):
     screen->addEvent( this );
 }
 
-void EventListener::onEvent( kvs::EventBase* event )
+void ControllerBase::onEvent( kvs::EventBase* event )
 {
     switch ( event->type() )
     {

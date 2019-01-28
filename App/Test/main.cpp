@@ -7,7 +7,7 @@
 #include <Lib/HeadMountedDisplay.h>
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
-#include <Lib/TouchEventListener.h>
+#include <Lib/TouchController.h>
 
 
 int main( int argc, char** argv )
@@ -33,10 +33,10 @@ int main( int argc, char** argv )
     screen.registerObject( object );
     screen.show(false);
 
-    kvs::oculus::TouchEventListener event( &screen );
-    event.setRotationFactor( 4000.0f );
-    event.setTranslationFactor( 4000.0f );
-    event.setScalingFactor( 25000.0f );
+    kvs::oculus::TouchController controller( &screen );
+    controller.setRotationFactor( 4000.0f );
+    controller.setTranslationFactor( 4000.0f );
+    controller.setScalingFactor( 25000.0f );
 
     return app.run();
 }

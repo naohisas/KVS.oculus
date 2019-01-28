@@ -10,13 +10,13 @@ namespace kvs
 namespace oculus
 {
 
-class EventListener : public kvs::EventListener
+class ControllerBase : public kvs::EventListener
 {
 private:
     kvs::oculus::InputDevice m_input_device; ///< input device
 
 public:
-    EventListener( kvs::oculus::Screen* screen );
+    ControllerBase( kvs::oculus::Screen* screen );
 
     virtual void initializeEvent() {}
     virtual void frameEvent() {}
