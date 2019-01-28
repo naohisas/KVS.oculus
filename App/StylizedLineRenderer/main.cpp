@@ -22,6 +22,7 @@
 #include <kvs/TornadoVolumeData>
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
+#include <Lib/TouchEventListener.h>
 
 
 /*===========================================================================*/
@@ -76,6 +77,11 @@ int main( int argc, char** argv )
     screen.setTitle( "kvs::Streamline" );
     screen.show();
     screen.showFullScreen();
+
+    kvs::oculus::TouchEventListener event( &screen );
+    event.setRotationFactor( 1200.0f );
+    event.setTranslationFactor( 2000.0f );
+    event.setScalingFactor( 10000.0f );
 
     return( app.run() );
 }

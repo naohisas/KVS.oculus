@@ -134,6 +134,7 @@ void TouchEventListener::frameEvent()
         else
         {
             m_is_grabbed = false;
+            m_both_is_grabbed = false;
             if ( scene()->mouse()->operationMode() == kvs::Mouse::Rotation )
             {
                 scene()->mouseReleaseFunction( right_m.x(), right_m.y() );
@@ -141,6 +142,10 @@ void TouchEventListener::frameEvent()
             else if ( scene()->mouse()->operationMode() == kvs::Mouse::Translation )
             {
                 scene()->mouseReleaseFunction( left_m.x(), left_m.y() );
+            }
+            else if ( scene()->mouse()->operationMode() == kvs::Mouse::Scaling )
+            {
+                m_touch_distance = 0.0f;
             }
         }
     }
