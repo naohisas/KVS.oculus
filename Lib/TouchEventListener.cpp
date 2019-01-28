@@ -13,9 +13,9 @@ TouchEventListener::TouchEventListener( kvs::oculus::Screen* screen ):
     m_is_grabbed( false ),
     m_both_is_grabbed( false ),
     m_touch_distance( 0.0f ),
-    m_rotation_factor( 1200.0f ),
-    m_translation_factor( 2000.0f ),
-    m_scaling_factor( 10000.0f )
+    m_rotation_factor( 5000.0f ),
+    m_translation_factor( 5000.0f ),
+    m_scaling_factor( 30000.0f )
 {
     if ( !controller().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
     if ( !controller().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }

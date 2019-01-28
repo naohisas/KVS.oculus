@@ -34,9 +34,9 @@ int main( int argc, char** argv )
     screen.show(false);
 
     kvs::oculus::TouchEventListener event( &screen );
-    event.setRotationFactor( 1200.0f );
-    event.setTranslationFactor( 2000.0f );
-    event.setScalingFactor( 10000.0f );
+    event.setRotationFactor( 4000.0f );
+    event.setTranslationFactor( 4000.0f );
+    event.setScalingFactor( 25000.0f );
 
     return app.run();
 }

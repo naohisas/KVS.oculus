@@ -79,9 +79,9 @@ int main( int argc, char** argv )
     screen.showFullScreen();
 
     kvs::oculus::TouchEventListener event( &screen );
-    event.setRotationFactor( 1200.0f );
-    event.setTranslationFactor( 2000.0f );
-    event.setScalingFactor( 10000.0f );
+    event.setRotationFactor( 3000.0f );
+    event.setTranslationFactor( 3000.0f );
+    event.setScalingFactor( 20000.0f );
 
     return( app.run() );
 }
