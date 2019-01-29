@@ -8,6 +8,7 @@
 #include <kvs/IDManager>
 #include <kvs/RendererBase>
 #include <kvs/PaintEvent>
+#include <kvs/glut/GLUT>
 
 
 namespace
@@ -65,7 +66,16 @@ Screen::Screen( kvs::oculus::Application* app ) : kvs::glut::Screen( app )
         flag = false;
         if ( m_hmd.create() )
         {
-            setSize( m_hmd.resolution().w, m_hmd.resolution().h );
+            const int desktop_width = glutGet( GLUT_SCREEN_WIDTH );
+            const int desktop_height = glutGet( GLUT_SCREEN_HEIGHT );
+
+            const int hmd_width = m_hmd.resolution().w;
+            const int hmd_height = m_hmd.resolution().h;
+
+            const float ratio = static_cast<float>( desktop_width ) / hmd_width;
+            const int screen_width = ( ratio >= 1.0f ) ? hmd_width : desktop_width;
+            const int screen_height = ( ratio >= 1.0f ) ? hmd_height : static_cast<int>( hmd_height * ratio );
+            setSize( screen_width, screen_height );
         }
     }
 
@@ -123,8 +133,6 @@ void Screen::paintEvent()
         const kvs::Vec3 camera_position = scene()->camera()->position();
         const kvs::Vec3 camera_lookat = scene()->camera()->lookAt();
         const kvs::Vec3 camera_upvector = scene()->camera()->upVector();
-//        const float camera_window_width = scene()->camera()->windowWidth();
-//        const float camera_window_height = scene()->camera()->windowHeight();
 
         const OVR::Vector3f position0 = ::ToVec3( camera_position );
         const OVR::Vector3f lookat0 = ::ToVec3( camera_lookat );
@@ -200,17 +208,15 @@ void Screen::paintEvent()
         }
 
         scene()->camera()->setPosition( camera_position, camera_lookat, camera_upvector );
-//        scene()->camera()->setWindowSize( camera_window_width, camera_window_height );
 
         m_hmd.endFrame( frame_index );
 
         // Render to the frame buffer.
-        m_hmd.renderToMirror();
+        m_hmd.renderToMirror( this->width(), this->height() );
 
         kvs::PaintEvent event;
         BaseClass::eventHandler()->notify( &event );
     }
-//    m_hmd.renderToMirror();
 
     kvs::OpenGL::Flush();
     redraw();

@@ -31,7 +31,7 @@ int main( int argc, char** argv )
 
     screen.registerObject( object, new kvs::Bounds() );
     screen.registerObject( object );
-    screen.show(false);
+    screen.show( true );
 
     kvs::oculus::TouchController controller( &screen );
     controller.setRotationFactor( 4000.0f );

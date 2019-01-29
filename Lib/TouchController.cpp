@@ -30,15 +30,15 @@ void TouchController::initializeEvent()
 
 void TouchController::frameEvent()
 {
-    std::cout << "TouchEventListener::frameEvent()" << std::endl;
-    if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
-    if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
+//    std::cout << "TouchEventListener::frameEvent()" << std::endl;
+//    if ( !inputDevice().hasRight() ) { std::cout << "Oculus Touch (R): Disable" << std::endl; }
+//    if ( !inputDevice().hasLeft() ) { std::cout << "Oculus Touch (L): Disable" << std::endl; }
 
     const ovrTrackingState ts = inputDevice().trackingState( 0 );
     ovrPosef hands[2] = { ts.HandPoses[ovrHand_Left].ThePose, ts.HandPoses[ovrHand_Right].ThePose };
 
-    std::cout << "  Position (R): " << kvs::oculus::ToVec3( hands[ovrHand_Left].Position ) << std::endl;
-    std::cout << "  Position (L): " << kvs::oculus::ToVec3( hands[ovrHand_Right].Position ) << std::endl;
+//    std::cout << "  Position (R): " << kvs::oculus::ToVec3( hands[ovrHand_Left].Position ) << std::endl;
+//    std::cout << "  Position (L): " << kvs::oculus::ToVec3( hands[ovrHand_Right].Position ) << std::endl;
 
     ovrInputState input_state = inputDevice().inputState( ovrControllerType_Touch );
     if ( input_state.Buttons & ovrButton_A ) { std::cout << "Pressed A" << std::endl; }

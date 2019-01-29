@@ -323,25 +323,66 @@ double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index ) const
 #endif
 }
 
-void HeadMountedDisplay::renderToMirror()
+void HeadMountedDisplay::renderToMirror( const int screen_width, const int screen_height )
 {
-    const int width = this->resolution().w;
-    const int height = this->resolution().h;
-
     kvs::OpenGL::SetDrawBuffer( GL_FRONT );
 #if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
     GLuint tex_id;
     KVS_OVR_CALL( ovr_GetMirrorTextureBufferGL( m_handler, m_mirror_tex, &tex_id ) );
     KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
     KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
-    KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+
+/*
+    // Get the crrent color texture ID.
+    const ovrTextureSwapChain& color_textures = m_layer_data.ColorTexture[0];
+    int current_index = 0;
+    KVS_OVR_CALL( ovr_GetTextureSwapChainCurrentIndex( m_handler, color_textures, &current_index ) );
+
+    GLuint tex_id = 0;
+    KVS_OVR_CALL( ovr_GetTextureSwapChainBufferGL( m_handler, color_textures, current_index, &tex_id ) );
+
+    // Bind the frame buffer object.
+//    m_framebuffer.bind();
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_framebuffer.id() ) );
+    KVS_GL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+*/
 #else
     KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
     KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
-    KVS_GL_CALL( glBlitFramebuffer( 0, 0, width, height, 0, height, width, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST ) );
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 #endif
+
+    const int hmd_width = this->resolution().w;
+    const int hmd_height = this->resolution().h;
+
+    const float hmd_ratio = static_cast<float>( hmd_width ) / hmd_height;
+    const float screen_ratio = static_cast<float>( screen_width ) / screen_height;
+
+    const int src_x0 = 0;
+    const int src_y0 = hmd_height;
+    const int src_x1 = hmd_width;
+    const int src_y1 = 0;
+    if ( screen_ratio > hmd_ratio )
+    {
+        const int width = static_cast<int>( screen_height * hmd_ratio );
+        const int height = screen_height;
+        const int dst_x0 = static_cast<int>( ( screen_width - width ) * 0.5f );
+        const int dst_y0 = 0;
+        const int dst_x1 = dst_x0 + width;
+        const int dst_y1 = screen_height;
+        KVS_GL_CALL( glBlitFramebuffer( src_x0, src_y0, src_x1, src_y1, dst_x0, dst_y0, dst_x1, dst_y1, GL_COLOR_BUFFER_BIT, GL_LINEAR ) );
+    }
+    else
+    {
+        const int width = screen_width;
+        const int height = static_cast<int>( screen_width / hmd_ratio );
+        const int dst_x0 = 0;
+        const int dst_y0 = static_cast<int>( ( screen_height - height ) * 0.5f );
+        const int dst_x1 = screen_width;
+        const int dst_y1 = dst_y0 + screen_height;
+        KVS_GL_CALL( glBlitFramebuffer( src_x0, src_y0, src_x1, src_y1, dst_x0, dst_y0, dst_x1, dst_y1, GL_COLOR_BUFFER_BIT, GL_LINEAR ) );
+    }
+
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
 }
 
 void HeadMountedDisplay::resetTracking()
