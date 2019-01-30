@@ -8,6 +8,7 @@
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
 #include <Lib/TouchController.h>
+#include <Lib/MirrorBufferChangeEvent.h>
 
 
 int main( int argc, char** argv )
@@ -32,6 +33,9 @@ int main( int argc, char** argv )
     screen.registerObject( object, new kvs::Bounds() );
     screen.registerObject( object );
     screen.show( true );
+
+    kvs::oculus::MirrorBufferChangeEvent event;
+    screen.addEvent( &event );
 
     kvs::oculus::TouchController controller( &screen );
     controller.setRotationFactor( 4000.0f );

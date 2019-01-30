@@ -58,7 +58,9 @@ namespace kvs
 namespace oculus
 {
 
-Screen::Screen( kvs::oculus::Application* app ) : kvs::glut::Screen( app )
+Screen::Screen( kvs::oculus::Application* app ):
+    kvs::glut::Screen( app ),
+    m_mirror_buffer_type( DistortedBothEyeImage )
 {
     static bool flag = true;
     if ( flag )
@@ -95,8 +97,6 @@ void Screen::show( const bool fullscreen )
 
 void Screen::initializeEvent()
 {
-//    kvs::glut::Screen::initializeEvent();
-
     // Configure tracking.
     const kvs::UInt32 trac_caps =
         ovrTrackingCap_Orientation |
@@ -121,6 +121,7 @@ void Screen::paintEvent()
     const kvs::Int64 frame_index = 0;
     const double frame_timing = m_hmd.frameTiming( frame_index );
     const ovrTrackingState& ts = m_hmd.trackingState( frame_timing );
+    const kvs::Vec4 current_viewport = kvs::OpenGL::Viewport();
 
     kvs::OpenGL::WithPushedMatrix p( GL_MODELVIEW );
     p.loadIdentity();
@@ -210,14 +211,24 @@ void Screen::paintEvent()
         scene()->camera()->setPosition( camera_position, camera_lookat, camera_upvector );
 
         m_hmd.endFrame( frame_index );
-
-        // Render to the frame buffer.
-        m_hmd.renderToMirror( this->width(), this->height() );
-
-        kvs::PaintEvent event;
-        BaseClass::eventHandler()->notify( &event );
     }
 
+    // Render to the frame buffer.
+    kvs::OpenGL::SetViewport( current_viewport );
+    switch ( m_mirror_buffer_type )
+    {
+    case LeftEyeImage: m_hmd.renderToMirrorLeftEyeImage(); break;
+    case RightEyeImage: m_hmd.renderToMirrorRightEyeImage(); break;
+    case BothEyeImage: m_hmd.renderToMirrorBothEyeImage(); break;
+    case DistortedBothEyeImage: m_hmd.renderToMirrorDistortedBothEyeImage(); break;
+    default: break;
+    }
+
+    // Callback the registered paint events.
+    kvs::PaintEvent event;
+    BaseClass::eventHandler()->notify( &event );
+
+    // Redraw.
     kvs::OpenGL::Flush();
     redraw();
 }

@@ -323,66 +323,65 @@ double HeadMountedDisplay::frameTiming( const kvs::Int64 frame_index ) const
 #endif
 }
 
-void HeadMountedDisplay::renderToMirror( const int screen_width, const int screen_height )
+void HeadMountedDisplay::renderToMirrorLeftEyeImage()
 {
-    kvs::OpenGL::SetDrawBuffer( GL_FRONT );
-#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
-    GLuint tex_id;
-    KVS_OVR_CALL( ovr_GetMirrorTextureBufferGL( m_handler, m_mirror_tex, &tex_id ) );
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
-    KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+    const bool distorted = false;
+    this->bind_mirror_buffer( distorted );
 
-/*
-    // Get the crrent color texture ID.
-    const ovrTextureSwapChain& color_textures = m_layer_data.ColorTexture[0];
-    int current_index = 0;
-    KVS_OVR_CALL( ovr_GetTextureSwapChainCurrentIndex( m_handler, color_textures, &current_index ) );
+    const int mirror_x = m_layer_data.Viewport[0].Pos.x;
+    const int mirror_y = m_layer_data.Viewport[0].Pos.y;
+    const int mirror_width = m_layer_data.Viewport[0].Size.w;
+    const int mirror_height = m_layer_data.Viewport[0].Size.h;
+    const kvs::Vec4i mirror_viewport( mirror_x, mirror_y, mirror_width, mirror_height );
+    const bool flip = false;
+    this->blit_mirror_buffer( kvs::Vec4( mirror_viewport ), flip );
 
-    GLuint tex_id = 0;
-    KVS_OVR_CALL( ovr_GetTextureSwapChainBufferGL( m_handler, color_textures, current_index, &tex_id ) );
+    this->unbind_mirror_buffer();
+}
 
-    // Bind the frame buffer object.
-//    m_framebuffer.bind();
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_framebuffer.id() ) );
-    KVS_GL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
-*/
-#else
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
-    KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
-#endif
+void HeadMountedDisplay::renderToMirrorRightEyeImage()
+{
+    const bool distorted = false;
+    this->bind_mirror_buffer( distorted );
 
-    const int hmd_width = this->resolution().w;
-    const int hmd_height = this->resolution().h;
+    const int mirror_x = m_layer_data.Viewport[1].Pos.x;
+    const int mirror_y = m_layer_data.Viewport[1].Pos.y;
+    const int mirror_width = m_layer_data.Viewport[1].Size.w;
+    const int mirror_height = m_layer_data.Viewport[1].Size.h;
+    const kvs::Vec4i mirror_viewport( mirror_x, mirror_y, mirror_width, mirror_height );
 
-    const float hmd_ratio = static_cast<float>( hmd_width ) / hmd_height;
-    const float screen_ratio = static_cast<float>( screen_width ) / screen_height;
+    const bool flip = false;
+    this->blit_mirror_buffer( kvs::Vec4( mirror_viewport ), flip );
 
-    const int src_x0 = 0;
-    const int src_y0 = hmd_height;
-    const int src_x1 = hmd_width;
-    const int src_y1 = 0;
-    if ( screen_ratio > hmd_ratio )
-    {
-        const int width = static_cast<int>( screen_height * hmd_ratio );
-        const int height = screen_height;
-        const int dst_x0 = static_cast<int>( ( screen_width - width ) * 0.5f );
-        const int dst_y0 = 0;
-        const int dst_x1 = dst_x0 + width;
-        const int dst_y1 = screen_height;
-        KVS_GL_CALL( glBlitFramebuffer( src_x0, src_y0, src_x1, src_y1, dst_x0, dst_y0, dst_x1, dst_y1, GL_COLOR_BUFFER_BIT, GL_LINEAR ) );
-    }
-    else
-    {
-        const int width = screen_width;
-        const int height = static_cast<int>( screen_width / hmd_ratio );
-        const int dst_x0 = 0;
-        const int dst_y0 = static_cast<int>( ( screen_height - height ) * 0.5f );
-        const int dst_x1 = screen_width;
-        const int dst_y1 = dst_y0 + screen_height;
-        KVS_GL_CALL( glBlitFramebuffer( src_x0, src_y0, src_x1, src_y1, dst_x0, dst_y0, dst_x1, dst_y1, GL_COLOR_BUFFER_BIT, GL_LINEAR ) );
-    }
+    this->unbind_mirror_buffer();
+}
 
-    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+void HeadMountedDisplay::renderToMirrorBothEyeImage()
+{
+    const bool distorted = false;
+    this->bind_mirror_buffer( distorted );
+
+    const int mirror_x = m_layer_data.Viewport[0].Pos.x;
+    const int mirror_y = m_layer_data.Viewport[0].Pos.y;
+    const int mirror_width = m_layer_data.Viewport[0].Size.w + m_layer_data.Viewport[1].Size.w;
+    const int mirror_height = m_layer_data.Viewport[0].Size.h;
+    const kvs::Vec4i mirror_viewport( mirror_x, mirror_y, mirror_width, mirror_height );
+    const bool flip = false;
+    this->blit_mirror_buffer( kvs::Vec4( mirror_viewport ), flip );
+
+    this->unbind_mirror_buffer();
+}
+
+void HeadMountedDisplay::renderToMirrorDistortedBothEyeImage()
+{
+    const bool distorted = true;
+    this->bind_mirror_buffer( distorted );
+
+    const bool flip = true;
+    const kvs::Vec4i mirror_viewport( 0, 0, this->resolution().w, this->resolution().h );
+    this->blit_mirror_buffer( kvs::Vec4( mirror_viewport ), flip );
+
+    this->unbind_mirror_buffer();
 }
 
 void HeadMountedDisplay::resetTracking()
@@ -704,6 +703,95 @@ ovrSizei HeadMountedDisplay::fov_texture_size( const ovrEyeType eye, const ovrFo
 #endif
     return result;
 }
+
+void HeadMountedDisplay::bind_mirror_buffer( const bool distorted )
+{
+    kvs::OpenGL::SetDrawBuffer( GL_FRONT );
+    kvs::OpenGL::SetClearColor( kvs::RGBColor::Black() );
+    kvs::OpenGL::Clear( GL_COLOR_BUFFER_BIT );
+
+    if ( distorted )
+    {
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
+        // Get the crrent color texture ID.
+        GLuint tex_id = 0;
+        KVS_OVR_CALL( ovr_GetMirrorTextureBufferGL( m_handler, m_mirror_tex, &tex_id ) );
+
+        // Bind the frame buffer object.
+        KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+        KVS_GL_CALL( glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+#else
+//        KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+//        KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
+#endif
+    }
+    else
+    {
+#if KVS_OVR_VERSION_GREATER_OR_EQUAL( 1, 0, 0 )
+        // Get the crrent color texture ID.
+        int current_index = 0;
+        const ovrTextureSwapChain& color_textures = m_layer_data.ColorTexture[0];
+        KVS_OVR_CALL( ovr_GetTextureSwapChainCurrentIndex( m_handler, color_textures, &current_index ) );
+
+        GLuint tex_id = 0;
+        KVS_OVR_CALL( ovr_GetTextureSwapChainBufferGL( m_handler, color_textures, current_index, &tex_id ) );
+
+        // Bind the frame buffer object.
+        KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_framebuffer.id() ) );
+        KVS_GL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0 ) );
+#else
+//        KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mirror_fbo ) );
+//        KVS_GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
+#endif
+    }
+}
+
+void HeadMountedDisplay::unbind_mirror_buffer()
+{
+    KVS_GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ) );
+}
+
+void HeadMountedDisplay::blit_mirror_buffer( const kvs::Vec4 mirror_viewport, const bool flip )
+{
+    const kvs::Vec4 screen_viewport = kvs::OpenGL::Viewport();
+    const int screen_width = static_cast<int>( screen_viewport[2] );
+    const int screen_height = static_cast<int>( screen_viewport[3] );
+
+    const int mirror_x = static_cast<int>( mirror_viewport[0] );
+    const int mirror_y = static_cast<int>( mirror_viewport[1] );
+    const int mirror_width = static_cast<int>( mirror_viewport[2] );
+    const int mirror_height = static_cast<int>( mirror_viewport[3] );
+
+    const float mirror_ratio = static_cast<float>( mirror_width ) / mirror_height;
+    const float screen_ratio = static_cast<float>( screen_width ) / screen_height;
+
+    const int src_x0 = mirror_x;
+    const int src_y0 = flip ? mirror_height : mirror_y;
+    const int src_x1 = src_x0 + mirror_width;
+    const int src_y1 = flip ? mirror_y: src_y0 + mirror_height;
+
+    if ( screen_ratio > mirror_ratio )
+    {
+        const int width = static_cast<int>( screen_height * mirror_ratio );
+        const int height = screen_height;
+        const int dst_x0 = static_cast<int>( ( screen_width - width ) * 0.5f );
+        const int dst_y0 = 0;
+        const int dst_x1 = dst_x0 + width;
+        const int dst_y1 = screen_height;
+        KVS_GL_CALL( glBlitFramebuffer( src_x0, src_y0, src_x1, src_y1, dst_x0, dst_y0, dst_x1, dst_y1, GL_COLOR_BUFFER_BIT, GL_LINEAR ) );
+    }
+    else
+    {
+        const int width = screen_width;
+        const int height = static_cast<int>( screen_width / mirror_ratio );
+        const int dst_x0 = 0;
+        const int dst_y0 = static_cast<int>( ( screen_height - height ) * 0.5f );
+        const int dst_x1 = screen_width;
+        const int dst_y1 = dst_y0 + screen_height;
+        KVS_GL_CALL( glBlitFramebuffer( src_x0, src_y0, src_x1, src_y1, dst_x0, dst_y0, dst_x1, dst_y1, GL_COLOR_BUFFER_BIT, GL_LINEAR ) );
+    }
+}
+
 
 } // end of namespace oculus
 

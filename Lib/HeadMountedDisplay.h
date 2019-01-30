@@ -90,7 +90,12 @@ public:
     void beginFrame( const kvs::Int64 frame_index );
     void endFrame( const kvs::Int64 frame_index );
     double frameTiming( const kvs::Int64 frame_index ) const;
-    void renderToMirror( const int screen_width, const int screen_height );
+
+    // Rendering to mirror buffer
+    void renderToMirrorLeftEyeImage();
+    void renderToMirrorRightEyeImage();
+    void renderToMirrorBothEyeImage();
+    void renderToMirrorDistortedBothEyeImage();
 
     // Tracking
     bool configureTracking( const kvs::UInt32 supported_caps, const kvs::UInt32 required_caps );
@@ -104,6 +109,9 @@ private:
     void update_eye_poses( const kvs::Int64 frame_index );
     void update_viewport();
     ovrSizei fov_texture_size( const ovrEyeType eye, const ovrFovPort fov, const float pixels_per_display_pixel );
+    void bind_mirror_buffer( const bool distorted = true );
+    void unbind_mirror_buffer();
+    void blit_mirror_buffer( const kvs::Vec4 mirror_viewport, const bool flip = false );
 };
 
 } // end of namespace oculus
