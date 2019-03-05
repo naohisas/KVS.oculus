@@ -22,7 +22,7 @@
 #include <kvs/TornadoVolumeData>
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
-#include <Lib/TouchEventListener.h>
+#include <Lib/TouchController.h>
 
 
 /*===========================================================================*/
@@ -78,7 +78,7 @@ int main( int argc, char** argv )
     screen.show();
     screen.showFullScreen();
 
-    kvs::oculus::TouchEventListener event( &screen );
+    kvs::oculus::TouchController event( &screen );
     event.setRotationFactor( 3000.0f );
     event.setTranslationFactor( 3000.0f );
     event.setScalingFactor( 20000.0f );

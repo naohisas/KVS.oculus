@@ -38,7 +38,7 @@ int main( int argc, char** argv )
     screen.addEvent( &event );
 
     kvs::oculus::TouchController controller( &screen );
-    controller.setRotationFactor( 4000.0f );
+    controller.setRotationFactor( 3000.0f );
     controller.setTranslationFactor( 4000.0f );
     controller.setScalingFactor( 25000.0f );
 

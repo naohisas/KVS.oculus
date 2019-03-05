@@ -20,7 +20,7 @@
 #include <kvs/TornadoVolumeData>
 #include <Lib/Application.h>
 #include <Lib/Screen.h>
-#include <Lib/TouchEventListener.h>
+#include <Lib/TouchController.h>
 
 
 /*===========================================================================*/
@@ -66,7 +66,7 @@ int main( int argc, char** argv )
     screen.setTitle( "kvs::ArrowGlyph" );
     screen.show();
 
-    kvs::oculus::TouchEventListener event( &screen );
+    kvs::oculus::TouchController event( &screen );
     event.setRotationFactor( 5000.0f );
     event.setTranslationFactor( 5000.0f );
     event.setScalingFactor( 30000.0f );

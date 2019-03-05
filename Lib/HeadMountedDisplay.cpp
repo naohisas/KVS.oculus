@@ -333,7 +333,7 @@ void HeadMountedDisplay::renderToMirrorLeftEyeImage()
     const int mirror_width = m_layer_data.Viewport[0].Size.w;
     const int mirror_height = m_layer_data.Viewport[0].Size.h;
     const kvs::Vec4i mirror_viewport( mirror_x, mirror_y, mirror_width, mirror_height );
-    const bool flip = false;
+    const bool flip = true;
     this->blit_mirror_buffer( kvs::Vec4( mirror_viewport ), flip );
 
     this->unbind_mirror_buffer();
