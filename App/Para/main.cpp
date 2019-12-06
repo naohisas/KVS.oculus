@@ -18,6 +18,11 @@ kvs::Real32 CoordArrayAxis[ 6 ] = {
       0.0, 100.0,   0.0
 };
 
+kvs::Real32 CoordArrayAxis2[ 6 ] = {
+    100.0,   0.0, 100.0, 
+    100.0, 100.0,   0.0
+};
+
 
 kvs::Real32 CoordArrayPoints[ N * 6 ];
 
@@ -28,6 +33,18 @@ kvs::UInt8 ColorArrayPoints[ N * 6 ];
 kvs::PointObject* CreateAxisObject()
 {
     kvs::ValueArray<kvs::Real32> coords( CoordArrayAxis, 6 );
+    kvs::ValueArray<kvs::UInt8> colors( ColorArrayAxis, 6 );
+
+    kvs::PointObject* object = new kvs::PointObject();
+    object->setCoords( coords );
+    object->setColors( colors );
+    object->setSize( 1 );
+
+    return object;
+}
+kvs::PointObject* CreateAxisObject2()
+{
+    kvs::ValueArray<kvs::Real32> coords( CoordArrayAxis2, 6 );
     kvs::ValueArray<kvs::UInt8> colors( ColorArrayAxis, 6 );
 
     kvs::PointObject* object = new kvs::PointObject();
@@ -106,18 +123,20 @@ int main( int argc, char** argv )
     //kvs::glut::Screen screen( &app );
     
     kvs::PointObject* object1 = CreateAxisObject();
+    kvs::PointObject* object2 = CreateAxisObject2();
     
-    kvs::PointObject* object2 = CreatePointObject(5);
+    kvs::PointObject* object3 = CreatePointObject(5);
     
-    kvs::LineObject* object3 = CreateLineObject(5);
+    kvs::LineObject* object4 = CreateLineObject(5);
 
     kvs::glut::Axis3D* axis = new kvs::glut::Axis3D();
     axis->setXLabel( "User" );
     screen.setTitle( "Para" );
     //screen.registerObject( object1 );
     screen.registerObject( object1, axis );
-    screen.registerObject( object2 );
+    screen.registerObject( object2, axis );
     screen.registerObject( object3 );
+    screen.registerObject( object4 );
     
     screen.show();
     
