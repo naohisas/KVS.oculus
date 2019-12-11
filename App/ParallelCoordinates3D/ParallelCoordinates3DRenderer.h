@@ -24,11 +24,12 @@ public:
     void setEnabledAntiAliasing( const bool enable ) const { m_enable_anti_aliasing = enable; }
     void enableAntiAliasing() const { this->setEnabledAntiAliasing( true ); }
     void disableAntiAliasing() const { this->setEnabledAntiAliasing( false ); }
+    bool isEnabledAntiAliasing() const { return m_enable_anti_aliasing; }
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
 
-private:
-    void draw_points( const kvs::TableObject* table );
-    void draw_lines( const kvs::TableObject* table );
+protected:
+    void drawPoints( const kvs::TableObject* table );
+    void drawLines( const kvs::TableObject* table );
 };
 
 } // end of namespace local

@@ -26,13 +26,13 @@ void ParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::Camera* 
         kvs::OpenGL::SetBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     }
 
-    this->draw_points( table );
-    this->draw_lines( table );
+    this->drawPoints( table );
+    this->drawLines( table );
 
     BaseClass::stopTimer();
 }
 
-void ParallelCoordinates3DRenderer::draw_points( const kvs::TableObject* table )
+void ParallelCoordinates3DRenderer::drawPoints( const kvs::TableObject* table )
 {
     const kvs::RGBColor point_color = kvs::RGBColor::Red();
     const float point_size = 5.0f;
@@ -75,7 +75,7 @@ void ParallelCoordinates3DRenderer::draw_points( const kvs::TableObject* table )
     }
 }
 
-void ParallelCoordinates3DRenderer::draw_lines( const kvs::TableObject* table )
+void ParallelCoordinates3DRenderer::drawLines( const kvs::TableObject* table )
 {
     const kvs::RGBColor line_color = kvs::RGBColor::Red();
     const float line_width = 1.0f;
