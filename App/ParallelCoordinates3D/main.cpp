@@ -35,7 +35,6 @@ template <typename T>
 inline kvs::ValueTable<T> ReadData( const std::string& filename )
 {
     kvs::Csv csv( filename );
-    csv.print( std::cout );
 
     const size_t nrows = csv.numberOfRows();
     const size_t ncols = csv.row(0).size();
