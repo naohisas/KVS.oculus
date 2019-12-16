@@ -1,15 +1,14 @@
 //#include <kvs/glut/Application>
 //#include <kvs/glut/Screen>
+#include <Lib/Application.h>
+#include <Lib/Screen.h>
+#include <Lib/TouchController.h>
 #include <kvs/LineObject>
 #include <kvs/PointObject>
 #include <kvs/glut/Axis3D>
 #include <iostream>
 #include <cstdio>
 #include <ctime>
-
-#include <Lib/Application.h>
-#include <Lib/Screen.h>
-#include <Lib/TouchController.h>
 
 const size_t N = 10;
 
@@ -115,13 +114,12 @@ kvs::LineObject* CreateLineObject(int size)
 
 int main( int argc, char** argv )
 {
+    //kvs::glut::Application app( argc, argv );
+    //kvs::glut::Screen screen( &app );
     kvs::oculus::Application app( argc, argv );
     kvs::oculus::Screen screen( &app );
     kvs::oculus::TouchController controller( &screen );
 
-    //kvs::glut::Application app( argc, argv );
-    //kvs::glut::Screen screen( &app );
-    
     kvs::PointObject* object1 = CreateAxisObject();
     kvs::PointObject* object2 = CreateAxisObject2();
     
