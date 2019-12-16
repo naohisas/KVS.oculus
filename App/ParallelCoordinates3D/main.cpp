@@ -1,5 +1,8 @@
-#include <kvs/glut/Application>
-#include <kvs/glut/Screen>
+//#include <kvs/glut/Application>
+//#include <kvs/glut/Screen>
+#include "Application.h"
+#include "Screen.h"
+#include "TouchController.h"
 #include <kvs/TableObject>
 #include <kvs/ValueTable>
 #include "ParallelCoordinates3DAxis.h"
@@ -20,8 +23,12 @@ typedef local::ParallelCoordinates3DRenderer Renderer;
 
 int main( int argc, char** argv )
 {
-    kvs::glut::Application app( argc, argv );
-    kvs::glut::Screen screen( &app );
+//    kvs::glut::Application app( argc, argv );
+//    kvs::glut::Screen screen( &app );
+    local::Application app( argc, argv );
+    local::Screen screen( &app );
+    local::TouchController controller( &screen );
+
     screen.show();
 
     const size_t nrows = 20;
