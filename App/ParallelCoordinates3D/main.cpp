@@ -5,11 +5,14 @@
 #include "TouchController.h"
 #include <kvs/TableObject>
 #include <kvs/ValueTable>
+#include <kvs/Csv>
+#include <kvs/String>
+#include <DimensionalityReduction/Lib/PrincipalComponentAnalysis.h>
+#include <DimensionalityReduction/Lib/MultiDimensionalScaling.h>
 #include "ParallelCoordinates3DAxis.h"
 #include "ParallelCoordinates3DRenderer.h"
 #include "BundledParallelCoordinates3DRenderer.h"
-#include <DimensionalityReduction/Lib/PrincipalComponentAnalysis.h>
-#include <DimensionalityReduction/Lib/MultiDimensionalScaling.h>
+
 
 //#define BUNDLED_RANDOM
 #define BUNDLED_PCA
@@ -21,10 +24,37 @@ typedef local::BundledParallelCoordinates3DRenderer Renderer;
 typedef local::ParallelCoordinates3DRenderer Renderer;
 #endif
 
+
+template <typename T>
+inline kvs::ValueTable<T> GenerateData( const size_t nrows, const size_t ncols )
+{
+    return kvs::ValueTable<T>::Random( nrows, ncols );
+}
+
+template <typename T>
+inline kvs::ValueTable<T> ReadData( const std::string& filename )
+{
+    kvs::Csv csv( filename );
+    csv.print( std::cout );
+
+    const size_t nrows = csv.numberOfRows();
+    const size_t ncols = csv.row(0).size();
+    kvs::ValueTable<T> data( nrows, ncols );
+    for ( size_t i = 0; i < nrows; i++ )
+    {
+        const kvs::Csv::Row& row = csv.row(i);
+        for ( size_t j = 0; j < ncols; j++ )
+        {
+            data[j][i] = kvs::String::To<T>( row[j] );
+        }
+    }
+
+    return data;
+}
+
+
 int main( int argc, char** argv )
 {
-//    kvs::glut::Application app( argc, argv );
-//    kvs::glut::Screen screen( &app );
     local::Application app( argc, argv );
     local::Screen screen( &app );
     local::TouchController controller( &screen );
@@ -33,7 +63,7 @@ int main( int argc, char** argv )
 
     const size_t nrows = 20;
     const size_t ncols = 4;
-    kvs::ValueTable<float> data = kvs::ValueTable<float>::Random( nrows, ncols );
+    kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1] ) : GenerateData<float>( nrows, ncols );
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
