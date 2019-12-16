@@ -5,14 +5,10 @@
 #include "ParallelCoordinates3DAxis.h"
 #include "ParallelCoordinates3DRenderer.h"
 #include "BundledParallelCoordinates3DRenderer.h"
-#include <DimensionalityReduction/Lib/PrincipalComponentAnalysis.h>
-#include <DimensionalityReduction/Lib/MultiDimensionalScaling.h>
 
-//#define BUNDLED_RANDOM
-#define BUNDLED_PCA
-//#define BUNDLED_MDS
+#define BUNDLED
 
-#if defined( BUNDLED_RANDOM ) || defined( BUNDLED_PCA ) || defined( BUNDLED_MDS )
+#if defined( BUNDLED )
 typedef local::BundledParallelCoordinates3DRenderer Renderer;
 #else
 typedef local::ParallelCoordinates3DRenderer Renderer;
@@ -34,18 +30,8 @@ int main( int argc, char** argv )
     Renderer* renderer = new Renderer();
     renderer->enableAntiAliasing();
 
-#if defined( BUNDLED_RANDOM )
+#if defined( BUNDLED )
     kvs::ValueTable<float> reduced_data = kvs::ValueTable<float>::Random( nrows, 2 );
-    renderer->setReducedData( reduced_data );
-    renderer->setBundledPosition( 0 );
-#elif defined( BUNDLED_PCA )
-    DimensionalityReduction::PrincipalComponentAnalysis<float> pca( data, 2 );
-    kvs::ValueTable<float> reduced_data = pca.transform( data );
-    renderer->setReducedData( reduced_data );
-    renderer->setBundledPosition( 0 );
-#elif defined( BUNDLED_MDS )
-    DimensionalityReduction::MultiDimensionalScaling<float> mds( data, 2 );
-    kvs::ValueTable<float> reduced_data = mds.transform( data );
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
 #endif
