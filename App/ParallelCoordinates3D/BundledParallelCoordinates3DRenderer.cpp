@@ -74,10 +74,10 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
             {
                 const kvs::ValueArray<float>& y0_values = m_reduced_data[0];
                 const kvs::ValueArray<float>& z0_values = m_reduced_data[1];
-                const float y0_min_value = 0.0f;
-                const float y0_max_value = 1.0f;
-                const float z0_min_value = 0.0f;
-                const float z0_max_value = 1.0f;
+                const float y0_min_value = m_reduced_min_values[0];
+                const float y0_max_value = m_reduced_max_values[0];
+                const float z0_min_value = m_reduced_min_values[1];
+                const float z0_max_value = m_reduced_max_values[1];
                 const float normalized_y0_coord = ( y0_values[i] - y0_min_value ) / ( y0_max_value - y0_min_value );
                 const float normalized_z0_coord = ( z0_values[i] - z0_min_value ) / ( z0_max_value - z0_min_value );
                 const float y0_coord = ( y_max_coord - y_min_coord ) * normalized_y0_coord + y_min_coord;
