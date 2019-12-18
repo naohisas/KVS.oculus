@@ -69,8 +69,6 @@ int main( int argc, char** argv )
     const kvs::Vec3 scale( x_scale, 1.0f, 1.0f );
     const kvs::Vec3 min_coord = object->minExternalCoord() * scale;
     const kvs::Vec3 max_coord = object->maxExternalCoord() * scale;
-    std::cout << min_coord << std::endl;
-    std::cout << max_coord << std::endl;
     object->setMinMaxExternalCoords( min_coord, max_coord );
 
     Renderer* renderer = new Renderer();
