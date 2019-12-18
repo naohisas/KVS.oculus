@@ -1,5 +1,3 @@
-//#include <kvs/glut/Application>
-//#include <kvs/glut/Screen>
 #include "Application.h"
 #include "Screen.h"
 #include "TouchController.h"
