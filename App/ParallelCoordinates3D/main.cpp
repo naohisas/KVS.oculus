@@ -58,14 +58,14 @@ int main( int argc, char** argv )
 
     screen.show();
 
-    const size_t nrows = 50;
-    const size_t ncols = 8;
+    const size_t nrows = 20;
+    const size_t ncols = 4;
     kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1] ) : GenerateData<float>( nrows, ncols );
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
 
-    const float x_scale = 1.5f;
+    const float x_scale = 1.0f;
     const kvs::Vec3 scale( x_scale, 1.0f, 1.0f );
     const kvs::Vec3 min_coord = object->minExternalCoord() * scale;
     const kvs::Vec3 max_coord = object->maxExternalCoord() * scale;
@@ -73,7 +73,7 @@ int main( int argc, char** argv )
 
     Renderer* renderer = new Renderer();
     renderer->enableAntiAliasing();
-    renderer->setPointSize( 5 );
+    renderer->setPointSize( 7 );
     renderer->setLineSize( 1 );
     renderer->setBundledLineSize( 2 );
     renderer->setPointColor( kvs::RGBColor::Black() );
