@@ -58,15 +58,29 @@ int main( int argc, char** argv )
 
     screen.show();
 
-    const size_t nrows = 20;
-    const size_t ncols = 4;
+    const size_t nrows = 50;
+    const size_t ncols = 8;
     kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1] ) : GenerateData<float>( nrows, ncols );
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
 
+    const float x_scale = 1.5f;
+    const kvs::Vec3 scale( x_scale, 1.0f, 1.0f );
+    const kvs::Vec3 min_coord = object->minExternalCoord() * scale;
+    const kvs::Vec3 max_coord = object->maxExternalCoord() * scale;
+    std::cout << min_coord << std::endl;
+    std::cout << max_coord << std::endl;
+    object->setMinMaxExternalCoords( min_coord, max_coord );
+
     Renderer* renderer = new Renderer();
     renderer->enableAntiAliasing();
+    renderer->setPointSize( 5 );
+    renderer->setLineSize( 1 );
+    renderer->setBundledLineSize( 2 );
+    renderer->setPointColor( kvs::RGBColor::Black() );
+    renderer->setLineColor( kvs::RGBColor::Black() );
+    renderer->setBundledLineColor( kvs::RGBColor::Red() );
 
 #if defined( BUNDLED_RANDOM )
     kvs::ValueTable<float> reduced_data = kvs::ValueTable<float>::Random( nrows, 2 );
@@ -88,6 +102,9 @@ int main( int argc, char** argv )
 
     local::ParallelCoordinates3DAxis* axis = new local::ParallelCoordinates3DAxis();
     axis->enableAntiAliasing();
+    axis->setAxisWidth( 3.0f );
+    axis->setAxisColor( kvs::RGBColor::Black() );
+    axis->setBackgroundColor( kvs::RGBAColor( kvs::RGBColor::White(), 1.0f ) );
     screen.registerObject( object, axis );
 
     return app.run();

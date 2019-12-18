@@ -7,7 +7,9 @@ namespace local
 
 BundledParallelCoordinates3DRenderer::BundledParallelCoordinates3DRenderer():
     m_reduced_plane_scale( 1.0f ),
-    m_bundled_position( 0 )
+    m_bundled_position( 0 ),
+    m_bundled_line_size( 1.0f ),
+    m_bundled_line_color( kvs::RGBColor::Black() )
 {
 }
 
@@ -26,18 +28,18 @@ void BundledParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::C
         kvs::OpenGL::SetBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     }
 
-    BaseClass::drawPoints( table );
-    BaseClass::drawLines( table );
-    this->draw_bundled_lines( table );
+    kvs::OpenGL::Enable( GL_DEPTH_TEST );
+
+    const float dpr = camera->devicePixelRatio();
+    BaseClass::drawLines( table, dpr );
+    BaseClass::drawPoints( table, dpr );
+    this->draw_bundled_lines( table, dpr );
 
     BaseClass::stopTimer();
 }
 
-void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableObject* table )
+void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableObject* table, const float dpr )
 {
-    const kvs::RGBColor line_color = kvs::RGBColor::Blue();
-    const float line_width = 2.0f;
-
     const float y_min_coord = table->minObjectCoord().y();
     const float y_max_coord = table->maxObjectCoord().y();
     const float z_min_coord = table->minObjectCoord().z();
@@ -46,9 +48,9 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
     const size_t nlines = table->numberOfRows();
     for ( size_t i = 0; i < nlines; i++ )
     {
-        kvs::OpenGL::SetLineWidth( line_width );
+        kvs::OpenGL::SetLineWidth( m_bundled_line_size * dpr );
         kvs::OpenGL::Begin( GL_LINE_STRIP );
-        kvs::OpenGL::Color( line_color );
+        kvs::OpenGL::Color( m_bundled_line_color );
 
         const size_t nplanes = table->numberOfColumns() / 2;
         const float x_stride = ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );

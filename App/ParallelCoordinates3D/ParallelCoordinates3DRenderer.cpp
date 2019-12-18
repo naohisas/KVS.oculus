@@ -7,7 +7,11 @@ namespace local
 {
 
 ParallelCoordinates3DRenderer::ParallelCoordinates3DRenderer():
-    m_enable_anti_aliasing( false )
+    m_enable_anti_aliasing( false ),
+    m_point_size( 1.0f ),
+    m_point_color( kvs::RGBColor::Black() ),
+    m_line_size( 1.0f ),
+    m_line_color( kvs::RGBColor::Black() )
 {
 }
 
@@ -26,19 +30,22 @@ void ParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::Camera* 
         kvs::OpenGL::SetBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     }
 
-    this->drawPoints( table );
-    this->drawLines( table );
+    kvs::OpenGL::Enable( GL_DEPTH_TEST );
+
+    const float dpr = camera->devicePixelRatio();
+    this->drawLines( table, dpr );
+    this->drawPoints( table, dpr );
 
     BaseClass::stopTimer();
 }
 
-void ParallelCoordinates3DRenderer::drawPoints( const kvs::TableObject* table )
+void ParallelCoordinates3DRenderer::drawPoints( const kvs::TableObject* table, const float dpr )
 {
-    const kvs::RGBColor point_color = kvs::RGBColor::Red();
-    const float point_size = 5.0f;
-
     // Rounded shape.
     kvs::OpenGL::Enable( GL_POINT_SMOOTH );
+
+    kvs::OpenGL::SetPointSize( m_point_size * dpr );
+    kvs::OpenGL::Begin( GL_POINTS );
 
     const float y_min_coord = table->minObjectCoord().y();
     const float y_max_coord = table->maxObjectCoord().y();
@@ -66,20 +73,15 @@ void ParallelCoordinates3DRenderer::drawPoints( const kvs::TableObject* table )
             const float y_coord = ( y_max_coord - y_min_coord ) * normalized_y_coord + y_min_coord;
             const float z_coord = ( z_max_coord - z_min_coord ) * normalized_z_coord + z_min_coord;
 
-            kvs::OpenGL::SetPointSize( point_size );
-            kvs::OpenGL::Begin( GL_POINTS );
-            kvs::OpenGL::Color( point_color );
+            kvs::OpenGL::Color( m_point_color );
             kvs::OpenGL::Vertex( x_coord, y_coord, z_coord );
-            kvs::OpenGL::End();
         }
     }
+    kvs::OpenGL::End();
 }
 
-void ParallelCoordinates3DRenderer::drawLines( const kvs::TableObject* table )
+void ParallelCoordinates3DRenderer::drawLines( const kvs::TableObject* table, const float dpr )
 {
-    const kvs::RGBColor line_color = kvs::RGBColor::Red();
-    const float line_width = 1.0f;
-
     const float y_min_coord = table->minObjectCoord().y();
     const float y_max_coord = table->maxObjectCoord().y();
     const float z_min_coord = table->minObjectCoord().z();
@@ -88,9 +90,9 @@ void ParallelCoordinates3DRenderer::drawLines( const kvs::TableObject* table )
     const size_t nlines = table->numberOfRows();
     for ( size_t i = 0; i < nlines; i++ )
     {
-        kvs::OpenGL::SetLineWidth( line_width );
+        kvs::OpenGL::SetLineWidth( m_line_size * dpr );
         kvs::OpenGL::Begin( GL_LINE_STRIP );
-        kvs::OpenGL::Color( line_color );
+        kvs::OpenGL::Color( m_line_color );
 
         const size_t nplanes = table->numberOfColumns() / 2;
         const float x_stride = ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
