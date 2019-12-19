@@ -75,8 +75,8 @@ int main( int argc, char** argv )
     Renderer* renderer = new Renderer();
     renderer->enableAntiAliasing();
     renderer->setPointSize( 7 );
-    renderer->setLineSize( 1 );
-    renderer->setBundledLineSize( 2 );
+    renderer->setLineSize( 1.5 );
+    renderer->setBundledLineSize( 1.5 );
     renderer->setPointColor( kvs::RGBColor::Black() );
     renderer->setLineColor( kvs::RGBColor::Black() );
     renderer->setBundledLineColor( kvs::RGBColor::Red() );
@@ -101,7 +101,7 @@ int main( int argc, char** argv )
 
     local::ParallelCoordinates3DAxis* axis = new local::ParallelCoordinates3DAxis();
     axis->enableAntiAliasing();
-    axis->setAxisWidth( 3.0f );
+    axis->setAxisWidth( 2.0f );
     axis->setAxisColor( kvs::RGBColor::Black() );
     axis->setBackgroundColor( kvs::RGBAColor( kvs::RGBColor( 230, 230, 230 ), 0.8f ) );
     screen.registerObject( object, axis );
