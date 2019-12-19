@@ -56,16 +56,17 @@ int main( int argc, char** argv )
     local::Screen screen( &app );
     local::TouchController controller( &screen );
 
+    screen.setBackgroundColor( kvs::RGBColor::White() );
     screen.show();
 
     const size_t nrows = 20;
-    const size_t ncols = 4;
+    const size_t ncols = 8;
     kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1] ) : GenerateData<float>( nrows, ncols );
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
 
-    const float x_scale = 1.0f;
+    const float x_scale = 1.5f;
     const kvs::Vec3 scale( x_scale, 1.0f, 1.0f );
     const kvs::Vec3 min_coord = object->minExternalCoord() * scale;
     const kvs::Vec3 max_coord = object->maxExternalCoord() * scale;
@@ -102,7 +103,7 @@ int main( int argc, char** argv )
     axis->enableAntiAliasing();
     axis->setAxisWidth( 3.0f );
     axis->setAxisColor( kvs::RGBColor::Black() );
-    axis->setBackgroundColor( kvs::RGBAColor( kvs::RGBColor::White(), 1.0f ) );
+    axis->setBackgroundColor( kvs::RGBAColor( kvs::RGBColor( 230, 230, 230 ), 0.8f ) );
     screen.registerObject( object, axis );
 
     return app.run();

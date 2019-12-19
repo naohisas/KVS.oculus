@@ -5,6 +5,7 @@
 #include <kvs/Camera>
 #include <kvs/Light>
 #include <kvs/TableObject>
+#include <vector>
 
 
 namespace local
@@ -17,6 +18,7 @@ class ParallelCoordinates3DAxis : public kvs::RendererBase
 
 private:
     mutable bool m_enable_anti_aliasing; ///< flag for anti-aliasing (AA)
+    std::vector<kvs::Vec3> m_plane_positions; ///< plane positions
     float m_axis_width;
     kvs::RGBColor m_axis_color;
     kvs::RGBAColor m_background_color;
