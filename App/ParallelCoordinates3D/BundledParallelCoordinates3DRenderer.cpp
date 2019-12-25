@@ -13,9 +13,9 @@ inline kvs::Vec3 Curve(
 {
     // Catmull-Rom with fist 3 points
     const kvs::Vec3 b = p0 - 2.0f * p1 + p2;
-    const kvs::Vec3 c = -3.0f * p0 + 4.0f * p1 - p2;
-    const kvs::Vec3 d = 2.0f * p0;
-    return 0.5f * ( ( b * t * t ) + ( c * t ) + d );
+    const kvs::Vec3 c = - 2.0f * p0 + 2.0f * p1;
+    const kvs::Vec3 d = 1.0f * p0;
+    return ( b * t * t ) + ( c * t ) + d;
 }
 
 }
