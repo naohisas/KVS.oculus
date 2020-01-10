@@ -49,7 +49,7 @@ void BundledParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::C
     kvs::OpenGL::Enable( GL_DEPTH_TEST );
 
     const float dpr = camera->devicePixelRatio();
-    BaseClass::drawLines( table, dpr );
+    //BaseClass::drawLines( table, dpr );
     BaseClass::drawPoints( table, dpr );
     this->draw_bundled_lines( table, dpr );
 
