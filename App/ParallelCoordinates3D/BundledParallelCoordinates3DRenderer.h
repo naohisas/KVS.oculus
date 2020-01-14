@@ -1,5 +1,6 @@
 #pragma once
 #include "ParallelCoordinates3DRenderer.h"
+#include <kvs/ColorMap>
 
 
 namespace local
@@ -18,6 +19,9 @@ private:
     size_t m_bundled_position;
     float m_bundled_line_size;
     kvs::RGBColor m_bundled_line_color;
+    size_t m_nclusters;
+    kvs::ValueArray<kvs::UInt32> m_clustered_color_ids;
+    kvs::ColorMap m_clustered_colors;
 
 public:
     BundledParallelCoordinates3DRenderer();
@@ -38,6 +42,10 @@ public:
     void setBundledPosition( const size_t p ) { m_bundled_position = p; }
     void setBundledLineSize( const float size ) { m_bundled_line_size = size; }
     void setBundledLineColor( const kvs::RGBColor& color ) { m_bundled_line_color = color; }
+
+    void setNumberOfClusters( const size_t nclusters ) { m_nclusters = nclusters; }
+    void setClusterColorIDs( const kvs::ValueArray<kvs::UInt32>& ids ) { m_clustered_color_ids = ids; }
+    void setClusterColors( const kvs::ColorMap& cmap ) { m_clustered_colors = cmap; }
 
     float reducedPlaneScale() const { return m_reduced_plane_scale; }
     const kvs::ValueTable<float>& reducedData() const { return m_reduced_data; }

@@ -27,8 +27,11 @@ BundledParallelCoordinates3DRenderer::BundledParallelCoordinates3DRenderer():
     m_reduced_plane_scale( 1.0f ),
     m_bundled_position( 0 ),
     m_bundled_line_size( 1.0f ),
-    m_bundled_line_color( kvs::RGBColor::Black() )
+    m_bundled_line_color( kvs::RGBColor::Black() ),
+    m_nclusters( 0 ),
+    m_clustered_colors( 256 )
 {
+    m_clustered_colors.create();
 }
 
 void BundledParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
@@ -63,18 +66,33 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
     const float z_min_coord = table->minObjectCoord().z();
     const float z_max_coord = table->maxObjectCoord().z();
 
+    if ( m_nclusters > 0 )
+    {
+        m_clustered_colors.setRange( 0.0f, m_nclusters + 1.0f );
+    }
+
     const size_t nlines = table->numberOfRows();
     for ( size_t i = 0; i < nlines; i++ )
     {
         kvs::OpenGL::SetLineWidth( m_bundled_line_size * dpr );
         kvs::OpenGL::Begin( GL_LINE_STRIP );
-        kvs::OpenGL::Color( m_bundled_line_color );
+        if ( m_nclusters > 0 )
+        {
+            const float value = static_cast<float>( m_clustered_color_ids.at(i) );
+            const kvs::RGBColor color = m_clustered_colors.at( value );
+            kvs::OpenGL::Color( color );
+        }
+        else
+        {
+            kvs::OpenGL::Color( m_bundled_line_color );
+        }
 
         const size_t nplanes = table->numberOfColumns() / 2;
         const float x_stride = ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
         float x_coord = table->minObjectCoord().x();
         for ( size_t j = 0; j < nplanes; j++, x_coord += x_stride )
         {
+            // Plane at j.
             const kvs::ValueArray<float>& y_values = table->column( 2 * j + 0 ).asValueArray<float>();
             const kvs::ValueArray<float>& z_values = table->column( 2 * j + 1 ).asValueArray<float>();
             const float y_min_value = table->minValue( 2 * j + 0 );
@@ -90,6 +108,7 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
 
             if ( j == m_bundled_position )
             {
+                // Bundled plane.
                 const kvs::ValueArray<float>& y1_values = m_reduced_data[0];
                 const kvs::ValueArray<float>& z1_values = m_reduced_data[1];
                 const float y1_min_value = m_reduced_min_values[0];
@@ -102,6 +121,11 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const float z1_coord = ( z_max_coord - z_min_coord ) * normalized_z1_coord + z_min_coord;
                 const float x1_coord = x_coord + 0.5f * x_stride;
 
+                const float y1_coord_center = ( y_max_coord - y_min_coord ) * 0.5f + y_min_coord;
+                const float z1_coord_center = ( z_max_coord - z_min_coord ) * 0.5f + z_min_coord;
+                const float x1_coord_center = x1_coord;
+
+                // Plane at j + 1
                 const kvs::ValueArray<float>& y2_values = table->column( 2 * ( j + 1 ) + 0 ).asValueArray<float>();
                 const kvs::ValueArray<float>& z2_values = table->column( 2 * ( j + 1 ) + 1 ).asValueArray<float>();
                 const float y2_min_value = table->minValue( 2 * ( j + 1 ) + 0 );
@@ -117,12 +141,15 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 // Spline curve
                 const kvs::Vec3 p0( x_coord, y_coord, z_coord );
                 const kvs::Vec3 p1( x1_coord, y1_coord, z1_coord );
+                const kvs::Vec3 p1_center( x1_coord_center, y1_coord_center, z1_coord_center ); // scaling
+                const kvs::Vec3 scaled_p1 = m_reduced_plane_scale * ( p1 - p1_center ) + p1_center; // scaling
                 const kvs::Vec3 p2( x2_coord, y2_coord, z2_coord );
                 const size_t ndivs = 20;
                 const float step = 1.0f / ndivs;
                 for ( size_t i = 0; i < ndivs; i++ )
                 {
-                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
+//                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
+                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p1, p2 ) );
                 }
             }
         }

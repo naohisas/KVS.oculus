@@ -5,6 +5,9 @@
 #include <kvs/ValueTable>
 #include <kvs/Csv>
 #include <kvs/String>
+#include <kvs/AdaptiveKMeans>
+#include <kvs/FastKMeans>
+#include <kvs/ColorMap>
 #include <DimensionalityReduction/Lib/PrincipalComponentAnalysis.h>
 #include <DimensionalityReduction/Lib/MultiDimensionalScaling.h>
 #include "ParallelCoordinates3DAxis.h"
@@ -81,20 +84,76 @@ int main( int argc, char** argv )
     renderer->setLineColor( kvs::RGBColor::Black() );
     renderer->setBundledLineColor( kvs::RGBColor::Red() );
 
+    kvs::ColorMap cmap( 256 );
+    /*
+    cmap.setRange( 0, 1 );
+    cmap.addPoint( 0.0, kvs::RGBColor( 215,  25,  28 ) );
+    cmap.addPoint( 0.2, kvs::RGBColor( 253,  17,  97 ) );
+    cmap.addPoint( 0.4, kvs::RGBColor( 255, 255, 191 ) );
+    cmap.addPoint( 0.6, kvs::RGBColor( 171, 221, 164 ) );
+    cmap.addPoint( 0.8, kvs::RGBColor(  43, 131, 186 ) );
+    cmap.addPoint( 1.0, kvs::RGBColor(  43, 131, 186 ) );
+    */
+    cmap.create();
+
 #if defined( BUNDLED_RANDOM )
     kvs::ValueTable<float> reduced_data = kvs::ValueTable<float>::Random( nrows, 2 );
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
+    renderer->setReducedPlaneScale( 3.0f );
+
+//    kvs::AdaptiveKMeans kmeans;
+//    kmeans.setInputTableData( reduced_data );
+//    kmeans.run();
+    kvs::FastKMeans kmeans;
+    kmeans.setInputTableData( reduced_data );
+    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
+    kmeans.setNumberOfClusters( 4 );
+    kmeans.run();
+
+    renderer->setNumberOfClusters( kmeans.numberOfClusters() );
+    renderer->setClusterColorIDs( kmeans.clusterIDs() );
+    renderer->setClusterColors( cmap );
+
 #elif defined( BUNDLED_PCA )
     DimensionalityReduction::PrincipalComponentAnalysis<float> pca( data, 2 );
     kvs::ValueTable<float> reduced_data = pca.transform( data );
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
+    renderer->setReducedPlaneScale( 3.0f );
+
+//    kvs::AdaptiveKMeans kmeans;
+//    kmeans.setInputTableData( reduced_data );
+//    kmeans.run();
+    kvs::FastKMeans kmeans;
+    kmeans.setInputTableData( reduced_data );
+    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
+    kmeans.setNumberOfClusters( 4 );
+    kmeans.run();
+
+    renderer->setNumberOfClusters( kmeans.numberOfClusters() );
+    renderer->setClusterColorIDs( kmeans.clusterIDs() );
+    renderer->setClusterColors( cmap );
+
 #elif defined( BUNDLED_MDS )
     DimensionalityReduction::MultiDimensionalScaling<float> mds( data, 2 );
     kvs::ValueTable<float> reduced_data = mds.transform( data );
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
+    renderer->setReducedPlaneScale( 3.0f );
+
+//    kvs::AdaptiveKMeans kmeans;
+//    kmeans.setInputTableData( reduced_data );
+//    kmeans.run();
+    kvs::FastKMeans kmeans;
+    kmeans.setInputTableData( reduced_data );
+    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
+    kmeans.setNumberOfClusters( 4 );
+    kmeans.run();
+
+    renderer->setNumberOfClusters( kmeans.numberOfClusters() );
+    renderer->setClusterColorIDs( kmeans.clusterIDs() );
+    renderer->setClusterColors( cmap );
 #endif
 
     screen.registerObject( object, renderer );
