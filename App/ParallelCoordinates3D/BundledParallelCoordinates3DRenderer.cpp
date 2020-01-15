@@ -153,10 +153,10 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
 //                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
                     kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p0, scaled_p1 ) );
                 }                
-                for ( size_t j = 0; i < ndivs; j++ )
+                for ( size_t j = 0; j < ndivs; j++ )
                 {
 //                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
-                    kvs::OpenGL::Vertex( ::Curve( i * step, p2, scaled_p2, scaled_p1 ) );
+                    kvs::OpenGL::Vertex( ::Curve( j * step, scaled_p1, scaled_p2, p2 ) );
                 }
             }
         }
