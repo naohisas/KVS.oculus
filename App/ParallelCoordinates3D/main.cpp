@@ -120,7 +120,7 @@ int main( int argc, char** argv )
     kvs::ValueTable<float> reduced_data = pca.transform( data );
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
-    renderer->setReducedPlaneScale( 3.0f );
+    renderer->setReducedPlaneScale( 3.0f ); //scaling
 
 //    kvs::AdaptiveKMeans kmeans;
 //    kmeans.setInputTableData( reduced_data );
