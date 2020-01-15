@@ -12,12 +12,37 @@ inline kvs::Vec3 Curve(
     const kvs::Vec3& p2 )
 {
     // Catmull-Rom with fist 3 points
-    const kvs::Vec3 b = p0 - 2.0f * p1 + p2;
-    const kvs::Vec3 c = - 2.0f * p0 + 2.0f * p1;
-    const kvs::Vec3 d = 1.0f * p0;
-    return ( b * t * t ) + ( c * t ) + d;
+    float by = (p0.y() - p1.y()) / (( p0.x() - p1.x() ) * ( p0.x() - p1.x() ));
+    float cy = - 2.0f * by * p1.x();
+    float dy = by * p1.x() * p1.x() + p1.y();
+    float y = ( by * t * t ) + ( cy * t ) + dy;
+    float bz = (p0.z() - p1.z()) / (( p0.x() - p1.x() ) * ( p0.x() - p1.x() ));
+    float cz = - 2.0f * bz * p1.x();
+    float dz = bz * p1.x() * p1.x() + p1.z();
+    float z = ( bz * t * t ) + ( cz * t ) + dz;
+    const kvs::Vec3 function(t, y, z);
+    return function;
 }
-
+    
+inline kvs::Vec3 Curve2(
+    const float t,
+    const kvs::Vec3& p0,
+    const kvs::Vec3& p1,
+    const kvs::Vec3& p2 )
+{
+    // Catmull-Rom with fist 3 points
+    float by = (p2.y() - p1.y()) / (( p2.x() - p1.x() ) * ( p2.x() - p1.x() ));
+    float cy = - 2.0f * by * p1.x();
+    float dy = by * p1.x() * p1.x() + p1.y();
+    float y = ( by * t * t ) + ( cy * t ) + dy;
+    float bz = (p2.z() - p1.z()) / (( p2.x() - p1.x() ) * ( p2.x() - p1.x() ));
+    float cz = - 2.0f * bz * p1.x();
+    float dz = bz * p1.x() * p1.x() + p1.z();
+    float z = ( bz * t * t ) + ( cz * t ) + dz;
+    const kvs::Vec3 function(t, y, z);
+    return function;
+}
+    
 }
 
 namespace local
@@ -52,7 +77,7 @@ void BundledParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::C
     kvs::OpenGL::Enable( GL_DEPTH_TEST );
 
     const float dpr = camera->devicePixelRatio();
-    //BaseClass::drawLines( table, dpr );
+    BaseClass::drawLines( table, dpr );
     BaseClass::drawPoints( table, dpr );
     this->draw_bundled_lines( table, dpr );
 
