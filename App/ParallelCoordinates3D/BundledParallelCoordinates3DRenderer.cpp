@@ -143,13 +143,20 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const kvs::Vec3 p1( x1_coord, y1_coord, z1_coord );
                 const kvs::Vec3 p1_center( x1_coord_center, y1_coord_center, z1_coord_center ); // scaling
                 const kvs::Vec3 scaled_p1 = m_reduced_plane_scale * ( p1 - p1_center ) + p1_center; // scaling
+                const kvs::Vec3 scaled_p0( p0.x(), scaled_p1.y(), scaled_p1.z());
                 const kvs::Vec3 p2( x2_coord, y2_coord, z2_coord );
+                const kvs::Vec3 scaled_p2( p2.x(), scaled_p1.y(), scaled_p1.z());
                 const size_t ndivs = 20;
                 const float step = 1.0f / ndivs;
                 for ( size_t i = 0; i < ndivs; i++ )
                 {
 //                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
-                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p1, p2 ) );
+                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p0, scaled_p1 ) );
+                }                
+                for ( size_t j = 0; i < ndivs; j++ )
+                {
+//                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
+                    kvs::OpenGL::Vertex( ::Curve( i * step, p2, scaled_p2, scaled_p1 ) );
                 }
             }
         }
