@@ -13,6 +13,7 @@ class BundledParallelCoordinates3DRenderer : public local::ParallelCoordinates3D
 
 private:
     float m_reduced_plane_scale;
+    float m_curve_size;
     kvs::ValueTable<float> m_reduced_data;
     kvs::ValueArray<float> m_reduced_min_values;
     kvs::ValueArray<float> m_reduced_max_values;
@@ -27,6 +28,7 @@ public:
     BundledParallelCoordinates3DRenderer();
 
     void setReducedPlaneScale( const float scale ) { m_reduced_plane_scale = scale; }
+    void setCurveSize( const float size ) { m_curve_size = size; }
     void setReducedData( const kvs::ValueTable<float>& data )
     {
         m_reduced_data = data;
