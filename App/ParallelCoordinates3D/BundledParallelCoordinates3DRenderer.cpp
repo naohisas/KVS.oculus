@@ -25,6 +25,7 @@ namespace local
 
 BundledParallelCoordinates3DRenderer::BundledParallelCoordinates3DRenderer():
     m_reduced_plane_scale( 1.0f ),
+    m_curve_size( 1.0f ),
     m_bundled_position( 0 ),
     m_bundled_line_size( 1.0f ),
     m_bundled_line_color( kvs::RGBColor::Black() ),
@@ -148,16 +149,22 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const kvs::Vec3 scaled_p2( p2.x(), scaled_p1.y(), scaled_p1.z());
                 const size_t ndivs = 10 * m_reduced_plane_scale;
                 const float step = 1.0f / ndivs;
+                //const float m_curve_size = 0.5;
+                const kvs::Vec3 resized_p0 = m_curve_size * p0 + (1-m_curve_size) * scaled_p0;
+                const kvs::Vec3 resized_p1_0 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p0;
+                const kvs::Vec3 resized_p1_2 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p2;
+                const kvs::Vec3 resized_p2 = m_curve_size * p2 + (1-m_curve_size) * scaled_p2;
+                kvs::OpenGL::Vertex(p0);
                 for ( size_t i = 0; i < ndivs; i++ )
                 {
-//                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
-                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p0, scaled_p1 ) );
-                }                
+                    kvs::OpenGL::Vertex( ::Curve( i * step, resized_p0, scaled_p0, resized_p1_0 ) );
+                }
+                kvs::OpenGL::Vertex(scaled_p1);                
                 for ( size_t j = 0; j < ndivs; j++ )
                 {
-//                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, p1, p2 ) );
-                    kvs::OpenGL::Vertex( ::Curve( j * step, scaled_p1, scaled_p2, p2 ) );
+                    kvs::OpenGL::Vertex( ::Curve( j * step, resized_p1_2, scaled_p2, resized_p2 ) );
                 }
+                kvs::OpenGL::Vertex(p2);
             }
         }
 
