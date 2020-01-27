@@ -10,10 +10,12 @@ class BundledParallelCoordinates3DRenderer : public local::ParallelCoordinates3D
 {
     kvsModule( local::BundledParallelCoordinates3DRenderer, Renderer );
     kvsModuleBaseClass( local::ParallelCoordinates3DRenderer );
-
-private:
+public:
     float m_reduced_plane_scale;
     float m_curve_size;
+private:
+    
+    
     kvs::ValueTable<float> m_reduced_data;
     kvs::ValueArray<float> m_reduced_min_values;
     kvs::ValueArray<float> m_reduced_max_values;
