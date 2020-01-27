@@ -1,6 +1,6 @@
 #include "Application.h"
 #include "Screen.h"
-#include "TouchController.h"
+//#include "TouchController.h"
 #include <kvs/TableObject>
 #include <kvs/ValueTable>
 #include <kvs/Csv>
@@ -13,6 +13,7 @@
 #include "ParallelCoordinates3DAxis.h"
 #include "ParallelCoordinates3DRenderer.h"
 #include "BundledParallelCoordinates3DRenderer.h"
+#include "MyTouchController.h"
 
 
 //#define BUNDLED_RANDOM
@@ -57,7 +58,7 @@ int main( int argc, char** argv )
 {
     local::Application app( argc, argv );
     local::Screen screen( &app );
-    local::TouchController controller( &screen );
+    local::MyTouchController controller( &screen );
 
     screen.setBackgroundColor( kvs::RGBColor::White() );
     screen.show();
@@ -68,6 +69,7 @@ int main( int argc, char** argv )
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
+    object->setName( "Object" );
 
     const float x_scale = 1.5f;
     const kvs::Vec3 scale( x_scale, 1.0f, 1.0f );
@@ -76,6 +78,7 @@ int main( int argc, char** argv )
     object->setMinMaxExternalCoords( min_coord, max_coord );
 
     Renderer* renderer = new Renderer();
+    renderer->setName( "Renderer" );
     renderer->enableAntiAliasing();
     renderer->setPointSize( 7 );
     renderer->setLineSize( 1.5 );
@@ -119,9 +122,9 @@ int main( int argc, char** argv )
     DimensionalityReduction::PrincipalComponentAnalysis<float> pca( data, 2 );
     kvs::ValueTable<float> reduced_data = pca.transform( data );
     renderer->setReducedData( reduced_data );
-    renderer->setBundledPosition( 0 );
-    renderer->setReducedPlaneScale( 3.0f ); //scaling
-    renderer->setCurveSize( 0.8f ); //0 <= CurveSize <= 1
+    renderer->setBundledPosition( 1 );
+    renderer->setReducedPlaneScale( 1.0f ); //scaling
+    renderer->setCurveSize( 0.1f ); //0 <= CurveSize <= 1
 
 //    kvs::AdaptiveKMeans kmeans;
 //    kmeans.setInputTableData( reduced_data );
