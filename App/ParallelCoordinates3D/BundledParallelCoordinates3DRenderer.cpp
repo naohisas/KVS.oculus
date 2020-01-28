@@ -159,7 +159,7 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 {
                     kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p0, resized_p1_0 ) );
                 }
-                kvs::OpenGL::Vertex(scaled_p1);                
+                //kvs::OpenGL::Vertex(scaled_p1);                
                 for ( size_t j = 0; j < ndivs; j++ )
                 {
                     kvs::OpenGL::Vertex( ::Curve( j * step, resized_p1_2, scaled_p2, p2 ) );
