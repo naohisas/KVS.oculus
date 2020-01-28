@@ -13,13 +13,13 @@ class BundledParallelCoordinates3DRenderer : public local::ParallelCoordinates3D
 public:
     float m_reduced_plane_scale;
     float m_curve_size;
+    size_t m_bundled_position;
 private:
     
     
     kvs::ValueTable<float> m_reduced_data;
     kvs::ValueArray<float> m_reduced_min_values;
     kvs::ValueArray<float> m_reduced_max_values;
-    size_t m_bundled_position;
     float m_bundled_line_size;
     kvs::RGBColor m_bundled_line_color;
     size_t m_nclusters;
