@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Screen.h"
 //#include "TouchController.h"
+#include "MyTouchController.h"
 #include <kvs/TableObject>
 #include <kvs/ValueTable>
 #include <kvs/Csv>
@@ -13,7 +14,6 @@
 #include "ParallelCoordinates3DAxis.h"
 #include "ParallelCoordinates3DRenderer.h"
 #include "BundledParallelCoordinates3DRenderer.h"
-#include "MyTouchController.h"
 
 
 //#define BUNDLED_RANDOM
