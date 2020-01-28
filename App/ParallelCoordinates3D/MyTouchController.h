@@ -1,6 +1,6 @@
 #pragma once
-#if defined( KVS_SUPPORT_OCULUS )
 #include "TouchController.h"
+#if defined( KVS_SUPPORT_OCULUS )
 #include <Lib/OVR.h>
 #include "BundledParallelCoordinates3DRenderer.h"
 
@@ -102,5 +102,42 @@ public:
 }
 
 #else
-namespace local { typedef TouchController MyTouchController; }
+//namespace local { typedef TouchController MyTouchController; }
+#include <kvs/EventListener>
+
+namespace local
+{
+    class MyTouchController : public kvs::EventListener
+    {
+    public:
+        MyTouchController( kvs::glut::Screen* screen )
+        {
+            setEventType( kvs::EventBase::KeyPressEvent | kvs::EventBase::MousePressEvent );
+            screen->addEvent( this );
+        }
+        
+        void keyPressEvent( kvs::KeyEvent* event )
+        {
+            switch ( event->key() )
+            {
+                case kvs::Key::a:
+                    std::cout << "a" << std::endl;
+                    break;
+                case kvs::Key::One:
+                    std::cout << "1" << std::endl;
+                    break;
+                case kvs::Key::Left:
+                    std::cout << "Left" << std::endl;
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        void mousePressEvent( kvs::MouseEvent* event )
+        {
+            std::cout << "mouse presses." << std::endl;
+        }
+    };
+}
 #endif
