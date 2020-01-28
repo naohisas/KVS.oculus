@@ -1,8 +1,8 @@
 #pragma once
 #include "TouchController.h"
+#include "BundledParallelCoordinates3DRenderer.h"
 #if defined( KVS_SUPPORT_OCULUS )
 #include <Lib/OVR.h>
-#include "BundledParallelCoordinates3DRenderer.h"
 
 namespace local
 {
@@ -118,16 +118,70 @@ namespace local
         
         void keyPressEvent( kvs::KeyEvent* event )
         {
+            typedef local::BundledParallelCoordinates3DRenderer Renderer;
+            Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
+            float size = renderer->m_curve_size;
+            float scale = renderer->m_reduced_plane_scale;
+            kvs::TableObject* object = kvs::TableObject::DownCast( scene()->object("Object") );
+            size_t numberOfPlanes = object->numberOfColumns() / 2 - 2;
+            size_t position = renderer->m_bundled_position;
             switch ( event->key() )
             {
-                case kvs::Key::a:
-                    std::cout << "a" << std::endl;
+                case kvs::Key::z:
+                    std::cout << "BundledPosition mode" << std::endl;
+                    position = position - 1;
+                    if (position > numberOfPlanes )
+                    {
+                        position = 0;
+                    }
+                    std::cout << "Bundled_Position = " << position << std::endl;
+                    renderer->setBundledPosition( position );
                     break;
-                case kvs::Key::One:
-                    std::cout << "1" << std::endl;
+                case kvs::Key::c:
+                    std::cout << "BundledPosition mode" << std::endl;
+                    position = position + 1;
+                    if (position > numberOfPlanes )
+                    {
+                        position = numberOfPlanes;
+                    }
+                    std::cout << "Bundled_Position = " << position << std::endl;
+                    renderer->setBundledPosition( position );
                     break;
                 case kvs::Key::Left:
-                    std::cout << "Left" << std::endl;
+                    std::cout << "CurveSizeScale mode" << std::endl;
+                    size = size - 0.1f;
+                    if (size < 0 )
+                    {
+                        size = 0.0f;
+                    }
+                    std::cout << "Curve_Size = " << size << std::endl;
+                    renderer->setCurveSize( size );
+                    break;
+                case kvs::Key::Right:
+                    std::cout << "CurveSizeScale mode" << std::endl;
+                    size = size + 0.1f;
+                    if (size > 1.0)
+                    {
+                        size = 1.0f;
+                    }
+                    std::cout << "Curve_Size = " << size << std::endl;
+                    renderer->setCurveSize( size );
+                    break;
+                case kvs::Key::Up:
+                    std::cout << "ReducedPlaneScale mode" << std::endl;
+                    scale = scale + 0.1f;
+                    std::cout << "Reduced_Plane_Size = " << scale << std::endl;
+                    renderer->setReducedPlaneScale( scale );
+                    break;
+                case kvs::Key::Down:
+                    std::cout << "ReducedPlaneScale mode" << std::endl;
+                    scale = scale - 0.1f;
+                    if (scale < 0 )
+                    {
+                        scale = 0.0f;
+                    }
+                    std::cout << "Reduced_Plane_Size = " << scale << std::endl;
+                    renderer->setReducedPlaneScale( scale );
                     break;
                 default:
                     break;
