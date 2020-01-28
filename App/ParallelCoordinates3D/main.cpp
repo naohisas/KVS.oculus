@@ -122,9 +122,9 @@ int main( int argc, char** argv )
     DimensionalityReduction::PrincipalComponentAnalysis<float> pca( data, 2 );
     kvs::ValueTable<float> reduced_data = pca.transform( data );
     renderer->setReducedData( reduced_data );
-    renderer->setBundledPosition( 1 );
+    renderer->setBundledPosition( 0 );
     renderer->setReducedPlaneScale( 1.0f ); //scaling
-    renderer->setCurveSize( 0.1f ); //0 <= CurveSize <= 1
+    renderer->setCurveSize( 1.0f ); //0 <= CurveSize <= 1
 
 //    kvs::AdaptiveKMeans kmeans;
 //    kmeans.setInputTableData( reduced_data );
