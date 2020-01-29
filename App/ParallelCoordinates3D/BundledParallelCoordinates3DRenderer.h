@@ -25,6 +25,7 @@ private:
     size_t m_nclusters;
     kvs::ValueArray<kvs::UInt32> m_clustered_color_ids;
     kvs::ColorMap m_clustered_colors;
+    kvs::ValueArray<kvs::Real32> m_cluster_centers;
 
 public:
     BundledParallelCoordinates3DRenderer();
@@ -50,6 +51,7 @@ public:
     void setNumberOfClusters( const size_t nclusters ) { m_nclusters = nclusters; }
     void setClusterColorIDs( const kvs::ValueArray<kvs::UInt32>& ids ) { m_clustered_color_ids = ids; }
     void setClusterColors( const kvs::ColorMap& cmap ) { m_clustered_colors = cmap; }
+    void setClusterCenters( const kvs::ValueArray<kvs::Real32>& centers ) { m_cluster_centers = centers; }
 
     float reducedPlaneScale() const { return m_reduced_plane_scale; }
     const kvs::ValueTable<float>& reducedData() const { return m_reduced_data; }
@@ -58,7 +60,8 @@ public:
     const kvs::RGBColor& bundledLineColor() const { return m_bundled_line_color; }
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
-
+    
+    
 private:
     void draw_bundled_lines( const kvs::TableObject* table, const float dpr = 1.0f );
 };
