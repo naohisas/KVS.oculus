@@ -147,7 +147,7 @@ namespace local
                     std::cout << "Bundled_Position = " << position << std::endl;
                     renderer->setBundledPosition( position );
                     break;
-                case kvs::Key::Left:
+                case kvs::Key::Down:
                     std::cout << "CurveSizeScale mode" << std::endl;
                     size = size - 0.1f;
                     if (size < 0 )
@@ -157,7 +157,7 @@ namespace local
                     std::cout << "Curve_Size = " << size << std::endl;
                     renderer->setCurveSize( size );
                     break;
-                case kvs::Key::Right:
+                case kvs::Key::Up:
                     std::cout << "CurveSizeScale mode" << std::endl;
                     size = size + 0.1f;
                     if (size > 1.0)
@@ -167,13 +167,13 @@ namespace local
                     std::cout << "Curve_Size = " << size << std::endl;
                     renderer->setCurveSize( size );
                     break;
-                case kvs::Key::Up:
+                case kvs::Key::s:
                     std::cout << "ReducedPlaneScale mode" << std::endl;
                     scale = scale + 0.1f;
                     std::cout << "Reduced_Plane_Size = " << scale << std::endl;
                     renderer->setReducedPlaneScale( scale );
                     break;
-                case kvs::Key::Down:
+                case kvs::Key::x:
                     std::cout << "ReducedPlaneScale mode" << std::endl;
                     scale = scale - 0.1f;
                     if (scale < 0 )
