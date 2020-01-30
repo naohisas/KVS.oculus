@@ -121,7 +121,8 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const float y1_coord = ( y_max_coord - y_min_coord ) * normalized_y1_coord + y_min_coord;
                 const float z1_coord = ( z_max_coord - z_min_coord ) * normalized_z1_coord + z_min_coord;
                 const float x1_coord = x_coord + 0.5f * x_stride;
-
+                const float y_cluster_center = ( y_max_coord - y_min_coord ) * ( m_cluster_centers.at(2 * m_clustered_color_ids.at(i) + 1) - y1_min_value ) / ( y1_max_value - y1_min_value ) + y_min_coord;
+                const float z_cluster_center = ( z_max_coord - z_min_coord ) * ( m_cluster_centers.at(2 * m_clustered_color_ids.at(i) + 0) - z1_min_value ) / ( z1_max_value - z1_min_value ) + z_min_coord;
                 const float y1_coord_center = ( y_max_coord - y_min_coord ) * 0.5f + y_min_coord;
                 const float z1_coord_center = ( z_max_coord - z_min_coord ) * 0.5f + z_min_coord;
                 const float x1_coord_center = x1_coord;
@@ -143,7 +144,8 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const kvs::Vec3 p0( x_coord, y_coord, z_coord );
                 const kvs::Vec3 p1( x1_coord, y1_coord, z1_coord );
                 const kvs::Vec3 p1_center( x1_coord_center, y1_coord_center, z1_coord_center ); // scaling
-                const kvs::Vec3 scaled_p1 = m_reduced_plane_scale * ( p1 - p1_center ) + p1_center; // scaling
+                const kvs::Vec3 cluster_center( x1_coord_center, y_cluster_center, z_cluster_center);
+                const kvs::Vec3 scaled_p1 = m_reduced_plane_scale * ( cluster_center - p1_center ) + p1_center + p1 - cluster_center; // scaling
                 const kvs::Vec3 scaled_p0( p0.x(), scaled_p1.y(), scaled_p1.z());
                 const kvs::Vec3 p2( x2_coord, y2_coord, z2_coord );
                 const kvs::Vec3 scaled_p2( p2.x(), scaled_p1.y(), scaled_p1.z());
@@ -159,7 +161,7 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 {
                     kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p0, resized_p1_0 ) );
                 }
-                //kvs::OpenGL::Vertex(scaled_p1);                
+                //kvs::OpenGL::Vertex(scaled_p1);
                 for ( size_t j = 0; j < ndivs; j++ )
                 {
                     kvs::OpenGL::Vertex( ::Curve( j * step, resized_p1_2, scaled_p2, p2 ) );
