@@ -34,3 +34,5 @@ App/Test/Test
 *.pdb
 *.manifest
 App/ParallelCoordinates3D/ParallelCoordinates3D
+
+.DS_Store
