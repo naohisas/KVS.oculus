@@ -121,8 +121,8 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const float y1_coord = ( y_max_coord - y_min_coord ) * normalized_y1_coord + y_min_coord;
                 const float z1_coord = ( z_max_coord - z_min_coord ) * normalized_z1_coord + z_min_coord;
                 const float x1_coord = x_coord + 0.5f * x_stride;
-                const float y_cluster_center = ( y_max_coord - y_min_coord ) * ( m_cluster_centers.at(2 * m_clustered_color_ids.at(i) + 1) - y1_min_value ) / ( y1_max_value - y1_min_value ) + y_min_coord;
-                const float z_cluster_center = ( z_max_coord - z_min_coord ) * ( m_cluster_centers.at(2 * m_clustered_color_ids.at(i) + 0) - z1_min_value ) / ( z1_max_value - z1_min_value ) + z_min_coord;
+                const float y_cluster_center = ( y_max_coord - y_min_coord ) * ( m_cluster_centers.at(2 * m_clustered_color_ids.at(i) + 0) - y1_min_value ) / ( y1_max_value - y1_min_value ) + y_min_coord;
+                const float z_cluster_center = ( z_max_coord - z_min_coord ) * ( m_cluster_centers.at(2 * m_clustered_color_ids.at(i) + 1) - z1_min_value ) / ( z1_max_value - z1_min_value ) + z_min_coord;
                 const float y1_coord_center = ( y_max_coord - y_min_coord ) * 0.5f + y_min_coord;
                 const float z1_coord_center = ( z_max_coord - z_min_coord ) * 0.5f + z_min_coord;
                 const float x1_coord_center = x1_coord;
