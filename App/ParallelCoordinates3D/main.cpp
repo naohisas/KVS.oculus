@@ -156,8 +156,9 @@ int main( int argc, char** argv )
     kvs::ValueTable<float> reduced_data = mds.transform( data );
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
-    renderer->setReducedPlaneScale( 3.0f );
-
+    renderer->setReducedPlaneScale( 1.0f );
+    renderer->setCurveSize( 0.5f );
+    
 //    kvs::AdaptiveKMeans kmeans;
 //    kmeans.setInputTableData( reduced_data );
 //    kmeans.run();
@@ -166,10 +167,23 @@ int main( int argc, char** argv )
     kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
     kmeans.setNumberOfClusters( 4 );
     kmeans.run();
+    
+    kvs::ValueArray<kvs::Real32> c0 = kmeans.clusterCenter( 0 );
+    std::cout << "c0: (x, y) = (" << c0[0] << "," << c0[1] << ")" << std::endl;
+    const size_t nclusters = kmeans.numberOfClusters();
+    kvs::ValueArray<kvs::Real32> centers( nclusters * 2 );
+    for( size_t i = 0; i < nclusters; i++ )
+    {
+        const kvs::ValueArray<kvs::Real32> ci = kmeans.clusterCenter(i);
+        centers[ 2 * i + 0 ] = ci[0];
+        centers[ 2 * i + 1 ] = ci[1];
+    }
 
     renderer->setNumberOfClusters( kmeans.numberOfClusters() );
     renderer->setClusterColorIDs( kmeans.clusterIDs() );
     renderer->setClusterColors( cmap );
+    renderer->setClusterCenters( centers );
+
 #endif
 
     screen.registerObject( object, renderer );
