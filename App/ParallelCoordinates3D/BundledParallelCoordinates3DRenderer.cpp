@@ -9,13 +9,15 @@ inline kvs::Vec3 Curve(
     const float t,
     const kvs::Vec3& p0,
     const kvs::Vec3& p1,
-    const kvs::Vec3& p2 )
+    const kvs::Vec3& p2,
+    const kvs::Vec3& p3 )
 {
     // Catmull-Rom with fist 3 points
-    const kvs::Vec3 b = p0 - 2.0f * p1 + p2;
-    const kvs::Vec3 c = - 2.0f * p0 + 2.0f * p1;
-    const kvs::Vec3 d = 1.0f * p0;
-    return ( b * t * t ) + ( c * t ) + d;
+    const kvs::Vec3 b = p3 - 3.0f * p2 + 3.0f * p1 - p0;
+    const kvs::Vec3 c = 3.0f * p2 - 6.0f * p1 + 3.0f * p0;
+    const kvs::Vec3 d = 3.0f * p1 - 3.0f * p0;
+    const kvs::Vec3 e = p0;
+    return ( b * t * t * t ) + ( c * t * t ) + ( d * t ) + e;
 }
 
 }
@@ -142,29 +144,36 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
 
                 // Spline curve
                 const kvs::Vec3 p0( x_coord, y_coord, z_coord );
+                const kvs::Vec3 p0_D_R( x1_coord, y_coord, z_coord );
                 const kvs::Vec3 p1( x1_coord, y1_coord, z1_coord );
                 const kvs::Vec3 p1_center( x1_coord_center, y1_coord_center, z1_coord_center ); // scaling
                 const kvs::Vec3 cluster_center( x1_coord_center, y_cluster_center, z_cluster_center);
                 const kvs::Vec3 scaled_p1 = m_reduced_plane_scale * ( cluster_center - p1_center ) + p1_center + p1 - cluster_center; // scaling
                 const kvs::Vec3 scaled_p0( p0.x(), scaled_p1.y(), scaled_p1.z());
                 const kvs::Vec3 p2( x2_coord, y2_coord, z2_coord );
+                const kvs::Vec3 p2_D_R( x1_coord, y2_coord, z2_coord );
                 const kvs::Vec3 scaled_p2( p2.x(), scaled_p1.y(), scaled_p1.z());
+                const float t = m_curve_size;
+                const kvs::Vec3 control1 = (1-t) * p0 + t * p0_D_R;
+                const kvs::Vec3 control2 = (1-t) * scaled_p0 + t * scaled_p1;
+                const kvs::Vec3 control3 = (1-t) * scaled_p2 + t * scaled_p1;
+                const kvs::Vec3 control4 = (1-t) * p2 + t * p2_D_R;
                 const size_t ndivs = kvs::Math::Max(10.0f ,10 * m_reduced_plane_scale);
                 const float step = 1.0f / ndivs;
                 //const float m_curve_size = 0.5;
                 //const kvs::Vec3 resized_p0 = m_curve_size * p0 + (1-m_curve_size) * scaled_p0;
-                const kvs::Vec3 resized_p1_0 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p0;
-                const kvs::Vec3 resized_p1_2 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p2;
+                //const kvs::Vec3 resized_p1_0 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p0;
+                //const kvs::Vec3 resized_p1_2 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p2;
                 //const kvs::Vec3 resized_p2 = m_curve_size * p2 + (1-m_curve_size) * scaled_p2;
                 //kvs::OpenGL::Vertex(p0);
                 for ( size_t i = 0; i < ndivs; i++ )
                 {
-                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, scaled_p0, resized_p1_0 ) );
+                    kvs::OpenGL::Vertex( ::Curve( i * step, p0, control1, control2, scaled_p1 ) );
                 }
                 //kvs::OpenGL::Vertex(scaled_p1);
                 for ( size_t j = 0; j < ndivs; j++ )
                 {
-                    kvs::OpenGL::Vertex( ::Curve( j * step, resized_p1_2, scaled_p2, p2 ) );
+                    kvs::OpenGL::Vertex( ::Curve( j * step, scaled_p1, control3, control4, p2 ) );
                 }
                 //kvs::OpenGL::Vertex(p2);
             }
