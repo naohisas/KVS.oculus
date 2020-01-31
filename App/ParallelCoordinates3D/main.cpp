@@ -124,7 +124,7 @@ int main( int argc, char** argv )
     renderer->setReducedData( reduced_data );
     renderer->setBundledPosition( 0 );
     renderer->setReducedPlaneScale( 1.0f ); //scaling
-    renderer->setCurveSize( 1.0f ); //0 <= CurveSize <= 1
+    renderer->setCurveSize( 0.5f ); //0 <= CurveSize <= 1
 
 //    kvs::AdaptiveKMeans kmeans;
 //    kmeans.setInputTableData( reduced_data );
