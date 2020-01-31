@@ -189,9 +189,29 @@ namespace local
             case kvs::Key::Left:
                 std::cout << "CurveSizeScale mode" << std::endl;
                 size = size + 0.1f;
-                if (size > 1.0)
+                if (size > 0.9)
                 {
-                    size = 1.0f;
+                    size = 0.9f;
+                }
+                std::cout << "Curve_Size = " << size << std::endl;
+                renderer->setCurveSize( size );
+                break;
+            case kvs::Key::a:
+                std::cout << "CurveSizeScale mode" << std::endl;
+                size = size - 0.1f;
+                if (size < 0 )
+                {
+                    size = 0.0f;
+                }
+                std::cout << "Curve_Size = " << size << std::endl;
+                renderer->setCurveSize( size );
+                break;
+            case kvs::Key::d:
+                std::cout << "CurveSizeScale mode" << std::endl;
+                size = size + 0.1f;
+                if (size > 0.9)
+                {
+                    size = 0.9f;
                 }
                 std::cout << "Curve_Size = " << size << std::endl;
                 renderer->setCurveSize( size );
