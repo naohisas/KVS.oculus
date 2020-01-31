@@ -153,26 +153,24 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const kvs::Vec3 p2( x2_coord, y2_coord, z2_coord );
                 const kvs::Vec3 p2_D_R( x1_coord, y2_coord, z2_coord );
                 const kvs::Vec3 scaled_p2( p2.x(), scaled_p1.y(), scaled_p1.z());
-                const float t = m_curve_size;
-                const kvs::Vec3 control1 = (1-t) * p0 + t * p0_D_R;
-                const kvs::Vec3 control2 = (1-t) * scaled_p0 + t * scaled_p1;
-                const kvs::Vec3 control3 = (1-t) * scaled_p2 + t * scaled_p1;
-                const kvs::Vec3 control4 = (1-t) * p2 + t * p2_D_R;
+                const kvs::Vec3 resized_p1_0 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p0;
+                const kvs::Vec3 resized_p1_2 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p2;
+                const kvs::Vec3 control1 = (1-m_curve_size) * p0 + m_curve_size * p0_D_R;
+                const kvs::Vec3 control2 = (1-m_curve_size) * scaled_p0 + m_curve_size * resized_p1_0;
+                const kvs::Vec3 control3 = (1-m_curve_size) * scaled_p2 + m_curve_size * resized_p1_2;
+                const kvs::Vec3 control4 = (1-m_curve_size) * p2 + m_curve_size * p2_D_R;
                 const size_t ndivs = kvs::Math::Max(10.0f ,10 * m_reduced_plane_scale);
                 const float step = 1.0f / ndivs;
-                //const float m_curve_size = 0.5;
-                //const kvs::Vec3 resized_p0 = m_curve_size * p0 + (1-m_curve_size) * scaled_p0;
-                //const kvs::Vec3 resized_p1_0 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p0;
-                //const kvs::Vec3 resized_p1_2 = m_curve_size * scaled_p1 + (1-m_curve_size) * scaled_p2;
-                //const kvs::Vec3 resized_p2 = m_curve_size * p2 + (1-m_curve_size) * scaled_p2;
                 //kvs::OpenGL::Vertex(p0);
                 for ( size_t i = 0; i < ndivs; i++ )
                 {
+                    //kvs::OpenGL::Vertex( ::Curve( i * step, p0, control1, control2, resized_p1_0 ) );
                     kvs::OpenGL::Vertex( ::Curve( i * step, p0, control1, control2, scaled_p1 ) );
                 }
                 //kvs::OpenGL::Vertex(scaled_p1);
                 for ( size_t j = 0; j < ndivs; j++ )
                 {
+                    //kvs::OpenGL::Vertex( ::Curve( j * step, resized_p1_2, control3, control4, p2 ) );
                     kvs::OpenGL::Vertex( ::Curve( j * step, scaled_p1, control3, control4, p2 ) );
                 }
                 //kvs::OpenGL::Vertex(p2);
