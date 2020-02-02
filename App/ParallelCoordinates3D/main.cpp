@@ -14,6 +14,7 @@
 #include "ParallelCoordinates3DAxis.h"
 #include "ParallelCoordinates3DRenderer.h"
 #include "BundledParallelCoordinates3DRenderer.h"
+#include <kvs/AdaptiveKMeans>
 
 
 //#define BUNDLED_RANDOM
@@ -87,7 +88,8 @@ int main( int argc, char** argv )
     renderer->setLineColor( kvs::RGBColor::Black() );
     renderer->setBundledLineColor( kvs::RGBColor::Red() );
 
-    kvs::ColorMap cmap( 256 );
+    kvs::ColorMap cmap = kvs::ColorMap::BrewerSpectral( 256 );
+    //kvs::ColorMap cmap( 256 );
     /*
     cmap.setRange( 0, 1 );
     cmap.addPoint( 0.0, kvs::RGBColor( 215,  25,  28 ) );
@@ -97,7 +99,7 @@ int main( int argc, char** argv )
     cmap.addPoint( 0.8, kvs::RGBColor(  43, 131, 186 ) );
     cmap.addPoint( 1.0, kvs::RGBColor(  43, 131, 186 ) );
     */
-    cmap.create();
+    //cmap.create();
 
 #if defined( BUNDLED_RANDOM )
     kvs::ValueTable<float> reduced_data = kvs::ValueTable<float>::Random( nrows, 2 );
@@ -105,14 +107,14 @@ int main( int argc, char** argv )
     renderer->setBundledPosition( 0 );
     renderer->setReducedPlaneScale( 3.0f );
 
-//    kvs::AdaptiveKMeans kmeans;
-//    kmeans.setInputTableData( reduced_data );
-//    kmeans.run();
-    kvs::FastKMeans kmeans;
+    kvs::AdaptiveKMeans kmeans;
     kmeans.setInputTableData( reduced_data );
-    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
-    kmeans.setNumberOfClusters( 4 );
     kmeans.run();
+//    kvs::FastKMeans kmeans;
+//    kmeans.setInputTableData( reduced_data );
+//    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
+//    kmeans.setNumberOfClusters( 4 );
+//    kmeans.run();
 
     renderer->setNumberOfClusters( kmeans.numberOfClusters() );
     renderer->setClusterColorIDs( kmeans.clusterIDs() );
@@ -126,14 +128,14 @@ int main( int argc, char** argv )
     renderer->setReducedPlaneScale( 1.0f ); //scaling
     renderer->setCurveSize( 0.5f ); //0 <= CurveSize <= 1
 
-//    kvs::AdaptiveKMeans kmeans;
-//    kmeans.setInputTableData( reduced_data );
-//    kmeans.run();
-    kvs::FastKMeans kmeans;
+    kvs::AdaptiveKMeans kmeans;
     kmeans.setInputTableData( reduced_data );
-    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
-    kmeans.setNumberOfClusters( 4 );
     kmeans.run();
+//    kvs::FastKMeans kmeans;
+//    kmeans.setInputTableData( reduced_data );
+//    kmeans.setSeedingMethod( kvs::FastKMeans::SmartSeeding );
+//    kmeans.setNumberOfClusters( 4 );
+//    kmeans.run();
     
     kvs::ValueArray<kvs::Real32> c0 = kmeans.clusterCenter( 0 );
     std::cout << "c0: (x, y) = (" << c0[0] << "," << c0[1] << ")" << std::endl;
