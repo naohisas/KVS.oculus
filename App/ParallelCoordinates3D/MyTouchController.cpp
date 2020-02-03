@@ -5,9 +5,9 @@ namespace local
 {
 MyTouchController::MyTouchController( kvs::oculus::Screen* screen ):
         local::TouchController( screen ),
+        m_is_grabed( false ),
         m_both_is_grabed( false ),
-        m_touch_distance( 0.0f ),
-        m_scaling_factor( 30.0f )
+        m_touch_distance( 0.0f )
 {
     
 }
@@ -45,8 +45,8 @@ void MyTouchController::frameEvent()
         {
             m_both_is_grabed = true;
             m_touch_distance = static_cast<float>( ( right_p - left_p ).length() );
-
-            /*m_is_grabbed = false;
+            m_is_grabed = false;
+            /*
             if ( scene()->mouse()->operationMode() == kvs::Mouse::Rotation )
             {
                 scene()->mouseReleaseFunction( right_m.x(), right_m.y() );
