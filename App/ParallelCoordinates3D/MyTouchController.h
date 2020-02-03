@@ -10,9 +10,11 @@ namespace local
 class MyTouchController : public local::TouchController
 {
 private:
-    bool m_is_grabed;
-    bool m_both_is_grabed;
+    bool m_is_grabbed;
+    bool m_both_is_grabbed;
     float m_touch_distance;
+    float m_scaling_factor;
+    float m_change_factor;
 
 public:
     MyTouchController( kvs::oculus::Screen* screen );
