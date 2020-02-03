@@ -15,6 +15,9 @@ private:
     float m_touch_distance;
     float m_scaling_factor;
     float m_change_factor;
+    float m_size_factor;
+    float m_left_x;
+    float m_right_x;
 
 public:
     MyTouchController( kvs::oculus::Screen* screen );
