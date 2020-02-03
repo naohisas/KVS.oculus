@@ -9,7 +9,10 @@ MyTouchController::MyTouchController( kvs::oculus::Screen* screen ):
         m_both_is_grabbed( false ),
         m_touch_distance( 0.0f ),
         m_scaling_factor( 10.0f ),
-        m_change_factor( 0.0f )
+        m_change_factor( 0.0f ),
+        m_size_factor( 10.0 ),
+        m_left_x( 0.0f ),
+        m_right_x( 0.0f )
 {
     
 }
@@ -26,7 +29,7 @@ void MyTouchController::frameEvent()
     //const kvs::Vec2i right_m( kvs::Vec2( right_p.x(), -right_p.y() ) * m_rotation_factor );
 
     const kvs::Vec3 left_p = kvs::oculus::ToVec3( hands[ovrHand_Left].Position );
-    //const kvs::Vec2i left_m( kvs::Vec2( left_p.x(), -left_p.y() ) * m_translation_factor );
+    //const kvs::Vec2i left_m( kvs::Vec2( left_p.x(), -left_p.y() ) * m_size_factor );
 
     const bool right_grabbed = input_state.IndexTrigger[ovrHand_Right] > 0.5f;
     const bool left_grabbed = input_state.IndexTrigger[ovrHand_Left] > 0.5f;
@@ -81,32 +84,70 @@ void MyTouchController::frameEvent()
     {
         renderer->setReducedPlaneScale( 1.0f ); 
     }
+    else if ( left_grabbed && !right_grabbed )
+    {
+        if ( m_is_grabbed )
+        {
+            const double left_x = left_p.x();
+            const double d = left_x - m_left_x;
+            size = renderer->m_curve_size + d * m_size_factor;
+            if (size < 0)
+            {
+                size = 0.0f;
+            }
+            else if (size > 0.9)
+            {
+                size = 0.9f;
+            }
+            renderer->setCurveSize( size );
+            m_left_x = static_cast<float>( left_x );
+            //std::cout << "d = " << d << std::endl;
+        }
+        else
+        {
+            m_is_grabbed = true;
+            m_left_x = static_cast<float>( left_p.x() );
+            m_both_is_grabbed = false;
+        }
+    }
+    else if ( right_grabbed && !left_grabbed )
+    {
+        if ( m_is_grabbed )
+        {
+            const double right_x = right_p.x();
+            const double d = m_right_x - right_x;
+            size = renderer->m_curve_size + d * m_size_factor;
+            if (size < 0)
+            {
+                size = 0.0f;
+            }
+            else if (size > 0.9)
+            {
+                size = 0.9f;
+            }
+            renderer->setCurveSize( size );
+            m_right_x = static_cast<float>( right_x );
+            //std::cout << "d = " << d << std::endl;
+        }
+        else
+        {
+            m_is_grabbed = true;
+            m_right_x = static_cast<float>( right_p.x() );
+            m_both_is_grabbed = false;
+        }
+    }
     else if ( input_state.Buttons & ovrButton_X )
     {
-        std::cout << "CurveSizeScale mode" << std::endl;
-        size = renderer->m_curve_size + 0.1f;
-        if (size > 1.0)
-        {
-            size = 1.0;
-        }
-        renderer->setCurveSize( size ); 
+        renderer->setCurveSize( 0.0f );
     }
     else if ( input_state.Buttons & ovrButton_Y )
     {
-        std::cout << "CurveSizeScale mode" << std::endl;
-
-        size = renderer->m_curve_size; 
-        size = scale - 0.01f;
-        if (size < 0.01)
-        {
-            size = 0.01f;
-        }
-        renderer->setCurveSize( size ); 
+        renderer->setCurveSize( 0.5f );
     }
     else if (a.x > 0.5)
     {
         m_change_factor = m_change_factor + 0.1f;
-        std::cout << "m_change_factor = " << m_change_factor << std::endl;
+        //std::cout << "m_change_factor = " << m_change_factor << std::endl;
         if( m_change_factor > 1.5f )
         {
             p = renderer->bundledPosition();
@@ -118,7 +159,7 @@ void MyTouchController::frameEvent()
     else if (a.x < -0.5)
     {
         m_change_factor = m_change_factor - 0.1f;
-        std::cout << "m_change_factor = " << m_change_factor << std::endl;
+        //std::cout << "m_change_factor = " << m_change_factor << std::endl;
         if( m_change_factor < -1.5f )
         {
             p = renderer->bundledPosition();
