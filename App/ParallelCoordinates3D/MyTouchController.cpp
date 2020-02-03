@@ -5,9 +5,11 @@ namespace local
 {
 MyTouchController::MyTouchController( kvs::oculus::Screen* screen ):
         local::TouchController( screen ),
-        m_is_grabed( false ),
-        m_both_is_grabed( false ),
-        m_touch_distance( 0.0f )
+        m_is_grabbed( false ),
+        m_both_is_grabbed( false ),
+        m_touch_distance( 0.0f ),
+        m_scaling_factor( 10.0f ),
+        m_change_factor( 0.0f )
 {
     
 }
@@ -26,26 +28,40 @@ void MyTouchController::frameEvent()
     const kvs::Vec3 left_p = kvs::oculus::ToVec3( hands[ovrHand_Left].Position );
     //const kvs::Vec2i left_m( kvs::Vec2( left_p.x(), -left_p.y() ) * m_translation_factor );
 
-    const bool right_grabed = input_state.IndexTrigger[ovrHand_Right] > 0.5f;
-    const bool left_grabed = input_state.IndexTrigger[ovrHand_Left] > 0.5f;
-    if ( right_grabed && left_grabed )
+    const bool right_grabbed = input_state.IndexTrigger[ovrHand_Right] > 0.5f;
+    const bool left_grabbed = input_state.IndexTrigger[ovrHand_Left] > 0.5f;
+    ovrVector2f a = input_state.Thumbstick[ovrHand_Left];
+    //std::cout << "x=" << a.x << std::endl;
+    //std::cout << "y=" << a.y << std::endl;
+
+    typedef local::BundledParallelCoordinates3DRenderer Renderer;
+    Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
+
+    float scale, size;
+    size_t p, n;
+    kvs::TableObject* object = kvs::TableObject::DownCast( scene()->object("Object") );
+    n = object->numberOfColumns() / 2;
+
+    if ( right_grabbed && left_grabbed )
     {
-        if ( m_both_is_grabed )
+        if ( m_both_is_grabbed )
         {
             const double touch_distance = ( right_p - left_p ).length();
-            const double d = touch_distance / m_touch_distance;
-            typedef local::BundledParallelCoordinates3DRenderer Renderer;
-            Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-            float scale = renderer->m_reduced_plane_scale;
-            renderer->setReducedPlaneScale( scale * d );
+            const double d = touch_distance - m_touch_distance;
+            scale = renderer->m_reduced_plane_scale + d * m_scaling_factor;
+            if (scale < 0)
+            {
+            scale = 0;
+            }
+            renderer->setReducedPlaneScale( scale );
             m_touch_distance = static_cast<float>( touch_distance );
             std::cout << "d = " << d << std::endl;
         }
         else
         {
-            m_both_is_grabed = true;
+            m_both_is_grabbed = true;
             m_touch_distance = static_cast<float>( ( right_p - left_p ).length() );
-            m_is_grabed = false;
+            m_is_grabbed = false;
             /*
             if ( scene()->mouse()->operationMode() == kvs::Mouse::Rotation )
             {
@@ -57,80 +73,66 @@ void MyTouchController::frameEvent()
             }*/
         }
     }
-    if ( input_state.Buttons & ovrButton_A )
+    else if ( input_state.Buttons & ovrButton_A )
     {
-        std::cout << "ReducedPlaneScale mode" << std::endl;
-
-        typedef local::BundledParallelCoordinates3DRenderer Renderer;
-        Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        float scale = renderer->m_reduced_plane_scale; 
-        scale = scale + 0.1f;
-        renderer->setReducedPlaneScale( scale ); 
+        renderer->setReducedPlaneScale( 0.0f ); 
     }
-    if ( input_state.Buttons & ovrButton_B )
+    else if ( input_state.Buttons & ovrButton_B )
     {
-        std::cout << "ReducedPlaneScale mode" << std::endl;
-        typedef local::BundledParallelCoordinates3DRenderer Renderer;
-        Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        float scale = renderer->m_reduced_plane_scale; 
-        scale = scale - 0.1f;
-        if (scale < 0.1)
-        {
-            scale = 0.1;
-        }
-        renderer->setReducedPlaneScale( scale ); 
+        renderer->setReducedPlaneScale( 1.0f ); 
     }
-    if ( input_state.Buttons & ovrButton_X )
+    else if ( input_state.Buttons & ovrButton_X )
     {
         std::cout << "CurveSizeScale mode" << std::endl;
-        typedef local::BundledParallelCoordinates3DRenderer Renderer;
-        Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        float scale = renderer->m_curve_size; 
-        scale = scale + 0.01f;
-        if (scale > 1.0)
+        size = renderer->m_curve_size + 0.1f;
+        if (size > 1.0)
         {
-            scale = 1.0;
+            size = 1.0;
         }
-        renderer->setCurveSize( scale ); 
+        renderer->setCurveSize( size ); 
     }
-    if ( input_state.Buttons & ovrButton_Y )
+    else if ( input_state.Buttons & ovrButton_Y )
     {
         std::cout << "CurveSizeScale mode" << std::endl;
 
-        typedef local::BundledParallelCoordinates3DRenderer Renderer;
-        Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        float scale = renderer->m_curve_size; 
-        scale = scale - 0.01f;
-        if (scale < 0.01)
+        size = renderer->m_curve_size; 
+        size = scale - 0.01f;
+        if (size < 0.01)
         {
-            scale = 0.01f;
+            size = 0.01f;
         }
-        renderer->setCurveSize( scale ); 
+        renderer->setCurveSize( size ); 
     }
-    ovrVector2f a = input_state.Thumbstick[ovrHand_Left];
-    //std::cout << "x=" << a.x << std::endl;
-    //std::cout << "y=" << a.y << std::endl;
-    if (a.x > 0.5)
+    else if (a.x > 0.5)
     {
-        typedef local::BundledParallelCoordinates3DRenderer Renderer;
-        Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        size_t p = renderer->bundledPosition();
-        std::cout << "p = " << p << std::endl;
-        kvs::TableObject* object = kvs::TableObject::DownCast( scene()->object("Object") );
-        size_t n = object->numberOfColumns() / 2;
-        std::cout << "n = " << n << std::endl;
-        p = p == n - 2 ? p : p + 1;
-        renderer->setBundledPosition(p);
+        m_change_factor = m_change_factor + 0.1f;
+        std::cout << "m_change_factor = " << m_change_factor << std::endl;
+        if( m_change_factor > 1.5f )
+        {
+            p = renderer->bundledPosition();
+            p = p == n - 2 ? p : p + 1;
+            renderer->setBundledPosition(p);
+            m_change_factor = 0.0f;
+        }
     }
     else if (a.x < -0.5)
     {
-        typedef local::BundledParallelCoordinates3DRenderer Renderer;
-        Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        size_t p = renderer->bundledPosition();
-        kvs::TableObject* object = kvs::TableObject::DownCast( scene()->object("Object") );
-        size_t n = object->numberOfColumns();
-        p = p == 0 ? p : p - 1;
-        renderer->setBundledPosition(p);
+        m_change_factor = m_change_factor - 0.1f;
+        std::cout << "m_change_factor = " << m_change_factor << std::endl;
+        if( m_change_factor < -1.5f )
+        {
+            p = renderer->bundledPosition();
+            p = p == 0 ? p : p - 1;
+            renderer->setBundledPosition(p);
+            m_change_factor = 0.0f;
+        }
+    }
+    else
+    {
+        m_is_grabbed = false;
+        m_both_is_grabbed = false;
+        m_touch_distance = 0.0f;
+        m_change_factor = 0.0f;
     }
 }
 }
