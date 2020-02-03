@@ -176,7 +176,7 @@ namespace local
                 std::cout << "Bundled_Position = " << position << std::endl;
                 renderer->setBundledPosition( position );
                 break;
-            case kvs::Key::Down:
+            case kvs::Key::Right:
                 std::cout << "CurveSizeScale mode" << std::endl;
                 size = size - 0.1f;
                 if (size < 0 )
@@ -186,12 +186,32 @@ namespace local
                 std::cout << "Curve_Size = " << size << std::endl;
                 renderer->setCurveSize( size );
                 break;
-            case kvs::Key::Up:
+            case kvs::Key::Left:
                 std::cout << "CurveSizeScale mode" << std::endl;
                 size = size + 0.1f;
-                if (size > 1.0)
+                if (size > 0.9)
                 {
-                    size = 1.0f;
+                    size = 0.9f;
+                }
+                std::cout << "Curve_Size = " << size << std::endl;
+                renderer->setCurveSize( size );
+                break;
+            case kvs::Key::a:
+                std::cout << "CurveSizeScale mode" << std::endl;
+                size = size - 0.1f;
+                if (size < 0 )
+                {
+                    size = 0.0f;
+                }
+                std::cout << "Curve_Size = " << size << std::endl;
+                renderer->setCurveSize( size );
+                break;
+            case kvs::Key::d:
+                std::cout << "CurveSizeScale mode" << std::endl;
+                size = size + 0.1f;
+                if (size > 0.9)
+                {
+                    size = 0.9f;
                 }
                 std::cout << "Curve_Size = " << size << std::endl;
                 renderer->setCurveSize( size );
@@ -203,6 +223,22 @@ namespace local
                 renderer->setReducedPlaneScale( scale );
                 break;
             case kvs::Key::x:
+                std::cout << "ReducedPlaneScale mode" << std::endl;
+                scale = scale - 0.1f;
+                if (scale < 0 )
+                {
+                    scale = 0.0f;
+                }
+                std::cout << "Reduced_Plane_Size = " << scale << std::endl;
+                renderer->setReducedPlaneScale( scale );
+                break;
+            case kvs::Key::Up:
+                std::cout << "ReducedPlaneScale mode" << std::endl;
+                scale = scale + 0.1f;
+                std::cout << "Reduced_Plane_Size = " << scale << std::endl;
+                renderer->setReducedPlaneScale( scale );
+                break;
+            case kvs::Key::Down:
                 std::cout << "ReducedPlaneScale mode" << std::endl;
                 scale = scale - 0.1f;
                 if (scale < 0 )
