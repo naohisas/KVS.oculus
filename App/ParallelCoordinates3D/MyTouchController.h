@@ -13,7 +13,6 @@ private:
     bool m_is_grabed;
     bool m_both_is_grabed;
     float m_touch_distance;
-    float m_scaling_factor;
 
 public:
     MyTouchController( kvs::oculus::Screen* screen );
