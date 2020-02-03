@@ -159,7 +159,7 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
                 const kvs::Vec3 control2 = (1-m_curve_size) * scaled_p0 + m_curve_size * resized_p1_0;
                 const kvs::Vec3 control3 = (1-m_curve_size) * scaled_p2 + m_curve_size * resized_p1_2;
                 const kvs::Vec3 control4 = (1-m_curve_size) * p2 + m_curve_size * p2_D_R;
-                const size_t ndivs = kvs::Math::Max(10.0f ,10 * m_reduced_plane_scale);
+                const size_t ndivs = kvs::Math::Max(100.0f ,10 * m_reduced_plane_scale);
                 const float step = 1.0f / ndivs;
                 //kvs::OpenGL::Vertex(p0);
                 for ( size_t i = 0; i < ndivs; i++ )
