@@ -41,17 +41,25 @@ inline kvs::ValueTable<T> ReadData( const std::string& filename, std::vector<std
 
     const size_t nrows = csv.numberOfRows()-1;
     const size_t ncols = csv.row(0).size();
-    kvs::ValueTable<T> data( nrows, ncols );
+    kvs::ValueTable<T> data( nrows, ncols + ncols % 2 );
     for ( size_t j = 0; j < ncols; j++ )
         {
             labels.push_back( csv.row(0)[j] );
         }
+    if(ncols % 2 == 1)
+    {
+        labels.push_back( csv.row(0)[ncols-1] );
+    }
     for ( size_t i = 0; i < nrows; i++ )
     {
         const kvs::Csv::Row& row = csv.row(i+1);
         for ( size_t j = 0; j < ncols; j++ )
         {
             data[j][i] = kvs::String::To<T>( row[j] );
+        }
+        if(ncols % 2 == 1)
+        {
+            data[ncols][i] = kvs::String::To<T>( row[ncols-1] );
         }
     }
 
