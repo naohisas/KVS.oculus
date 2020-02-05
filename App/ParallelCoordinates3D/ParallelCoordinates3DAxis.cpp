@@ -15,9 +15,6 @@ ParallelCoordinates3DAxis::ParallelCoordinates3DAxis():
     m_value_color( kvs::RGBColor::Black() ),
     m_background_color( kvs::RGBColor::White(), 0.0f ),
     m_number_of_grid( 3 ),
-    m_x_label("X"),
-    m_y_label("Y"),
-    m_z_label("Z"),
     m_show_labels( true ),
     m_show_values( true )
 {
@@ -171,9 +168,6 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
 
     kvs::Vector3f min_value = min_coord;
     kvs::Vector3f max_value = max_coord;
-    kvs::Vector3f dvalue = max_value - min_value;
-    dvalue /= static_cast<float>( m_number_of_grid + 1 );
-    
     kvs::Vector3f interval = max_value - min_value;
     interval /= static_cast<float>( m_number_of_grid + 1 );
     
@@ -181,11 +175,22 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
     const kvs::Real32 length = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
     const kvs::Real32 label_offset = length * 0.1f;
     const kvs::Real32 value_offset = length * 0.05f;
-    
-    // Draw Y label and values.
+    float min_y, max_y, min_z, max_z;
+    for ( size_t i = 0; i < m_plane_positions.size(); i++ )
     {
-        kvs::Vector3f position( min_coord.x(), center.y(), min_coord.z() );
-        position.x() = x_min <= x_max ? min_coord.x() : max_coord.x();
+        const float x_coord = m_plane_positions[i].x();
+        min_y = table->minValue( 2 * i + 0 );
+        max_y = table->maxValue( 2 * i + 0 );
+        min_z = table->minValue( 2 * i + 1 );
+        max_z = table->maxValue( 2 * i + 1 );
+        float dvalue_y = max_y - min_y;
+        dvalue_y /= static_cast<float>( m_number_of_grid + 1 );
+        float dvalue_z = max_z - min_z;
+        dvalue_z /= static_cast<float>( m_number_of_grid + 1 );
+        // Draw Y label and values.
+        {
+            kvs::Vector3f position( x_coord, center.y(), min_coord.z() );
+        //position.x() = x_min <= x_max ? min_coord.x() : max_coord.x();
         position.z() = z_min <= z_max ? max_coord.z() : min_coord.z();
         
         // Label.
@@ -199,7 +204,7 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
             
             const kvs::Vector3f label = position + offset;
             glRasterPos3f( label.x(), label.y(), label.z() );
-            char* head = const_cast<char*>( m_y_label.c_str() );
+            char* head = const_cast<char*>( m_labels[ 2 * i + 0 ].c_str() );
             for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
         }
         
@@ -215,7 +220,7 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
             const size_t nlines = size_t( m_number_of_grid ) + 2;
             for ( size_t i = 0; i < nlines; i++ )
             {
-                std::string number = kvs::String::ToString( min_value.y() + dvalue.y() * i );
+                std::string number = kvs::String::ToString( min_y + dvalue_y * i );
                 const float x = position.x() + offset.x();
                 const float y = min_coord.y() + interval.y() * i;
                 const float z = position.z() + offset.y();
@@ -228,8 +233,8 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
     
     // Draw Z label and values.
     {
-        kvs::Vector3f position( min_coord.x(), min_coord.y(), center.z() );
-        position.x() = x_min <= x_max ? max_coord.x() : min_coord.x();
+        kvs::Vector3f position( x_coord, min_coord.y(), center.z() );
+        //position.x() = x_min <= x_max ? max_coord.x() : min_coord.x();
         position.y() = y_min <= y_max ? min_coord.y() : max_coord.y();
         
         // Label.
@@ -243,7 +248,7 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
             
             const kvs::Vector3f label = position + offset;
             glRasterPos3f( label.x(), label.y(), label.z() );
-            char* head = const_cast<char*>( m_z_label.c_str() );
+            char* head = const_cast<char*>( m_labels[ 2 * i + 1 ].c_str() );
             for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
         }
         
@@ -259,7 +264,7 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
             const size_t nlines = size_t( m_number_of_grid ) + 2;
             for ( size_t i = 0; i < nlines; i++ )
             {
-                std::string number = kvs::String::ToString( min_value.z() + dvalue.z() * i );
+                std::string number = kvs::String::ToString( min_z + dvalue_z * i );
                 const float x = position.x() + offset.x();
                 const float y = position.y() + offset.y();
                 const float z = min_coord.z() + interval.z() * i;
@@ -268,6 +273,7 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
                 for( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
             }
         }
+    }
     }
 }
 
