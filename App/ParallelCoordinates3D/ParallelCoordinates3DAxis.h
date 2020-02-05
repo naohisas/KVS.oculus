@@ -21,7 +21,15 @@ private:
     std::vector<kvs::Vec3> m_plane_positions; ///< plane positions
     float m_axis_width;
     kvs::RGBColor m_axis_color;
+    kvs::RGBColor m_label_color;
+    kvs::RGBColor m_value_color;
     kvs::RGBAColor m_background_color;
+    size_t m_number_of_grid;
+    std::string m_x_label; ///< label of the x axis
+    std::string m_y_label; ///< label of the y axis
+    std::string m_z_label; ///< label of the z axis
+    bool m_show_labels; ///< flags for showing the labels
+    bool m_show_values; ///< flags for showing the values
 
 public:
     ParallelCoordinates3DAxis();
@@ -39,6 +47,8 @@ public:
 
 private:
     void draw_planes( const kvs::TableObject* table, const float dpr = 1.0f );
+    void draw_gridlines( const kvs::TableObject* table, const float dpr = 1.0f );
+    void draw_labels( const kvs::TableObject* table, const float dpr = 1.0f );
 };
 
 } // end of namespace local
