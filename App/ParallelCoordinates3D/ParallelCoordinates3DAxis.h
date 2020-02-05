@@ -25,9 +25,7 @@ private:
     kvs::RGBColor m_value_color;
     kvs::RGBAColor m_background_color;
     size_t m_number_of_grid;
-    std::string m_x_label; ///< label of the x axis
-    std::string m_y_label; ///< label of the y axis
-    std::string m_z_label; ///< label of the z axis
+    std::vector<std::string> m_labels;
     bool m_show_labels; ///< flags for showing the labels
     bool m_show_values; ///< flags for showing the values
 
@@ -39,6 +37,7 @@ public:
     void disableAntiAliasing() const { this->setEnabledAntiAliasing( false ); }
     void setAxisWidth( const float width ) { m_axis_width = width; }
     void setAxisColor( const kvs::RGBColor& color ) { m_axis_color = color; }
+    void setLabels( const std::vector<std::string>& labels ) { m_labels = labels; }
     void setBackgroundColor( const kvs::RGBAColor& color ) { m_background_color = color; }
     float axisWidth() const { return m_axis_width; }
     const kvs::RGBColor& axisColor() const { return m_axis_color; }
