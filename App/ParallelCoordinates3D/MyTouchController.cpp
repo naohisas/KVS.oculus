@@ -58,7 +58,7 @@ void MyTouchController::frameEvent()
             }
             renderer->setReducedPlaneScale( scale );
             m_touch_distance = static_cast<float>( touch_distance );
-            std::cout << "d = " << d << std::endl;
+            //std::cout << "d = " << d << std::endl;
         }
         else
         {
