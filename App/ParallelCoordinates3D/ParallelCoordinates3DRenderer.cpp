@@ -53,8 +53,8 @@ void ParallelCoordinates3DRenderer::drawPoints( const kvs::TableObject* table, c
     const float z_max_coord = table->maxObjectCoord().z();
 
     const size_t nplanes = table->numberOfColumns() / 2;
-    const float x_stride = ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
-    float x_coord = table->minObjectCoord().x();
+    const float x_stride = (float)nplanes * 0.5f * ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
+    float x_coord =(float)nplanes * 0.5f * table->minObjectCoord().x();
     for ( size_t i = 0; i < nplanes; i++, x_coord += x_stride )
     {
         const kvs::ValueArray<float>& y_values = table->column( 2 * i + 0 ).asValueArray<float>();
