@@ -99,7 +99,7 @@ int main( int argc, char** argv )
     renderer->setLineSize( 1.5 );
     renderer->setBundledLineSize( 1.5 );
     renderer->setPointColor( kvs::RGBColor::Black() );
-    renderer->setLineColor( kvs::RGBColor::Black() );
+    renderer->setLineColor( kvs::RGBColor::Red() );
     renderer->setBundledLineColor( kvs::RGBColor::Red() );
 
     kvs::ColorMap cmap = kvs::ColorMap::BrewerSpectral( 256 );
