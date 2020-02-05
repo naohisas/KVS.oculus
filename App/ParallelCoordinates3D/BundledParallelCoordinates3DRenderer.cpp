@@ -91,8 +91,8 @@ void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableO
         }
 
         const size_t nplanes = table->numberOfColumns() / 2;
-        const float x_stride = ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
-        float x_coord = table->minObjectCoord().x();
+        const float x_stride = (float)nplanes * 0.5f * ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
+        float x_coord = (float)nplanes * 0.5f * table->minObjectCoord().x();
         for ( size_t j = 0; j < nplanes; j++, x_coord += x_stride )
         {
             // Plane at j.
