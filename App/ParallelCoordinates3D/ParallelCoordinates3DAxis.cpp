@@ -43,7 +43,7 @@ void ParallelCoordinates3DAxis::exec( kvs::ObjectBase* object, kvs::Camera* came
 
     // Visibility ordering of the axis planes
     {
-        const kvs::Vec4 camera_position = kvs::OpenGL::ModelViewMatrix().inverted() * kvs::Vec4( camera->position(), 1.0f );
+        //const kvs::Vec4 camera_position = kvs::OpenGL::ModelViewMatrix().inverted() * kvs::Vec4( camera->position(), 1.0f );
         /*
         std::sort(
             m_plane_positions.begin(),
