@@ -95,8 +95,8 @@ void ParallelCoordinates3DRenderer::drawLines( const kvs::TableObject* table, co
         kvs::OpenGL::Color( m_line_color );
 
         const size_t nplanes = table->numberOfColumns() / 2;
-        const float x_stride = ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
-        float x_coord = table->minObjectCoord().x();
+        const float x_stride = (float)nplanes * 0.5f * ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
+        float x_coord = (float)nplanes * 0.5f * table->minObjectCoord().x();
         for ( size_t j = 0; j < nplanes; j++, x_coord += x_stride )
         {
             const kvs::ValueArray<float>& y_values = table->column( 2 * j + 0 ).asValueArray<float>();
