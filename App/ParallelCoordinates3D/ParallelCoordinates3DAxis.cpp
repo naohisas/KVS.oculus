@@ -29,8 +29,8 @@ void ParallelCoordinates3DAxis::exec( kvs::ObjectBase* object, kvs::Camera* came
     {
         // Following processes are executed once.
         const size_t nplanes = table->numberOfColumns() / 2;
-        const kvs::Vec3 min_coord = table->minObjectCoord();
-        const kvs::Vec3 max_coord = table->maxObjectCoord();
+        const kvs::Vec3 min_coord = (float)nplanes * 0.5f * table->minObjectCoord();
+        const kvs::Vec3 max_coord = (float)nplanes * 0.5f * table->maxObjectCoord();
         const float x_stride = ( max_coord.x() - min_coord.x() ) / ( nplanes - 1 );
         const float y_coord = ( max_coord.y() + min_coord.y() ) * 0.5f;
         const float z_coord = ( max_coord.z() + min_coord.z() ) * 0.5f;
