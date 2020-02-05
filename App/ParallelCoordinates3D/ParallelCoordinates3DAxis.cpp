@@ -192,90 +192,90 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
         // Draw Y label and values.
         {
             kvs::Vector3f position( x_coord, center.y(), min_coord.z() );
-        //position.x() = x_min <= x_max ? min_coord.x() : max_coord.x();
-        position.z() = z_min <= z_max ? max_coord.z() : min_coord.z();
-        
-        // Label.
-        if ( m_show_labels )
-        {
-            kvs::Vector3f offset( -label_offset, 0.0f, -label_offset );
-            offset.x() = x_min <= x_max ? -label_offset :  label_offset;
-            offset.z() = z_min <= z_max ?  label_offset : -label_offset;
-            
-            glColor3ub( m_label_color.r(), m_label_color.g(), m_label_color.b() );
-            
-            const kvs::Vector3f label = position + offset;
-            glRasterPos3f( label.x(), label.y(), label.z() );
-            char* head = const_cast<char*>( m_labels[ 2 * i + 0 ].c_str() );
-            for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
-        }
-        
-        // Values.
-        if ( m_show_values )
-        {
-            kvs::Vector3f offset( -value_offset, 0.0f, -value_offset );
-            offset.x() = x_min <= x_max ? -value_offset :  value_offset;
-            offset.z() = z_min <= z_max ?  value_offset : -value_offset;
-            
-            glColor3ub( m_value_color.r(), m_value_color.g(), m_value_color.b() );
-            
-            const size_t nlines = size_t( m_number_of_grid ) + 2;
-            for ( size_t i = 0; i < nlines; i++ )
+            //position.x() = x_min <= x_max ? min_coord.x() : max_coord.x();
+            position.z() = z_min <= z_max ? max_coord.z() : min_coord.z();
+
+            // Label.
+            if ( m_show_labels )
             {
-                std::string number = kvs::String::ToString( min_y + dvalue_y * i );
-                const float x = position.x() + offset.x();
-                const float y = min_coord.y() + interval.y() * i;
-                const float z = position.z() + offset.y();
-                glRasterPos3f( x, y, z );
-                char* head = const_cast<char*>( number.c_str() );
+                kvs::Vector3f offset( -label_offset, 0.0f, -label_offset );
+                offset.x() = x_min <= x_max ? -label_offset :  label_offset;
+                offset.z() = z_min <= z_max ?  label_offset : -label_offset;
+            
+                glColor3ub( m_label_color.r(), m_label_color.g(), m_label_color.b() );
+            
+                const kvs::Vector3f label = position + offset;
+                glRasterPos3f( label.x(), label.y(), label.z() );
+                char* head = const_cast<char*>( m_labels[ 2 * i + 0 ].c_str() );
                 for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
             }
-        }
-    }
-    
-    // Draw Z label and values.
-    {
-        kvs::Vector3f position( x_coord, min_coord.y(), center.z() );
-        //position.x() = x_min <= x_max ? max_coord.x() : min_coord.x();
-        position.y() = y_min <= y_max ? min_coord.y() : max_coord.y();
         
-        // Label.
-        if ( m_show_labels )
-        {
-            kvs::Vector3f offset( -label_offset, -label_offset, 0.0f );
-            offset.x() = x_min <= x_max ?  label_offset : -label_offset;
-            offset.y() = y_min <= y_max ? -label_offset :  label_offset;
-            
-            glColor3ub( m_label_color.r(), m_label_color.g(), m_label_color.b() );
-            
-            const kvs::Vector3f label = position + offset;
-            glRasterPos3f( label.x(), label.y(), label.z() );
-            char* head = const_cast<char*>( m_labels[ 2 * i + 1 ].c_str() );
-            for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
-        }
-        
-        // Values.
-        if ( m_show_values )
-        {
-            kvs::Vector3f offset( -value_offset, -value_offset, 0.0f );
-            offset.x() = x_min <= x_max ?  value_offset : -value_offset;
-            offset.y() = y_min <= y_max ? -value_offset :  value_offset;
-            
-            glColor3ub( m_label_color.r(), m_value_color.g(), m_value_color.b() );
-            
-            const size_t nlines = size_t( m_number_of_grid ) + 2;
-            for ( size_t i = 0; i < nlines; i++ )
+            // Values.
+            if ( m_show_values )
             {
-                std::string number = kvs::String::ToString( min_z + dvalue_z * i );
-                const float x = position.x() + offset.x();
-                const float y = position.y() + offset.y();
-                const float z = min_coord.z() + interval.z() * i;
-                glRasterPos3f( x, y, z );
-                char* head = const_cast<char*>( number.c_str() );
-                for( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
+                kvs::Vector3f offset( -value_offset, 0.0f, -value_offset );
+                offset.x() = x_min <= x_max ? -value_offset :  value_offset;
+                offset.z() = z_min <= z_max ?  value_offset : -value_offset;
+            
+                glColor3ub( m_value_color.r(), m_value_color.g(), m_value_color.b() );
+            
+                const size_t nlines = size_t( m_number_of_grid ) + 2;
+                for ( size_t i = 0; i < nlines; i++ )
+                {
+                    std::string number = kvs::String::ToString( min_y + dvalue_y * i );
+                    const float x = position.x() + offset.x();
+                    const float y = min_coord.y() + interval.y() * i;
+                    const float z = position.z() + offset.y();
+                    glRasterPos3f( x, y, z );
+                    char* head = const_cast<char*>( number.c_str() );
+                    for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
+                }
+            }
+        }   
+    
+        // Draw Z label and values.
+        {
+            kvs::Vector3f position( x_coord, min_coord.y(), center.z() );
+            //position.x() = x_min <= x_max ? max_coord.x() : min_coord.x();
+            position.y() = y_min <= y_max ? min_coord.y() : max_coord.y();
+        
+            // Label.
+            if ( m_show_labels )
+            {
+                kvs::Vector3f offset( -label_offset, -label_offset, 0.0f );
+                offset.x() = x_min <= x_max ?  label_offset : -label_offset;
+                offset.y() = y_min <= y_max ? -label_offset :  label_offset;
+            
+                glColor3ub( m_label_color.r(), m_label_color.g(), m_label_color.b() );
+            
+                const kvs::Vector3f label = position + offset;
+                glRasterPos3f( label.x(), label.y(), label.z() );
+                char* head = const_cast<char*>( m_labels[ 2 * i + 1 ].c_str() );
+                for ( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
+            }   
+        
+            // Values.
+            if ( m_show_values )
+            {
+                kvs::Vector3f offset( -value_offset, -value_offset, 0.0f );
+                offset.x() = x_min <= x_max ?  value_offset : -value_offset;
+                offset.y() = y_min <= y_max ? -value_offset :  value_offset;
+            
+                glColor3ub( m_label_color.r(), m_value_color.g(), m_value_color.b() );
+            
+                const size_t nlines = size_t( m_number_of_grid ) + 2;
+                for ( size_t i = 0; i < nlines; i++ )
+                {
+                    std::string number = kvs::String::ToString( min_z + dvalue_z * i );
+                    const float x = position.x() + offset.x();
+                    const float y = position.y() + offset.y();
+                    const float z = min_coord.z() + interval.z() * i;
+                    glRasterPos3f( x, y, z );
+                    char* head = const_cast<char*>( number.c_str() );
+                    for( char* p = head; *p; p++ ) { glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *p ); }
+                }   
             }
         }
-    }
     }
 }
 
