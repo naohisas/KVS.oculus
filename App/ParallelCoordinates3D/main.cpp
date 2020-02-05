@@ -35,16 +35,20 @@ inline kvs::ValueTable<T> GenerateData( const size_t nrows, const size_t ncols )
 }
 
 template <typename T>
-inline kvs::ValueTable<T> ReadData( const std::string& filename )
+inline kvs::ValueTable<T> ReadData( const std::string& filename, std::vector<std::string> &labels )
 {
     kvs::Csv csv( filename );
 
-    const size_t nrows = csv.numberOfRows();
+    const size_t nrows = csv.numberOfRows()-1;
     const size_t ncols = csv.row(0).size();
     kvs::ValueTable<T> data( nrows, ncols );
+    for ( size_t j = 0; j < ncols; j++ )
+        {
+            labels.push_back( csv.row(0)[j] );
+        }
     for ( size_t i = 0; i < nrows; i++ )
     {
-        const kvs::Csv::Row& row = csv.row(i);
+        const kvs::Csv::Row& row = csv.row(i+1);
         for ( size_t j = 0; j < ncols; j++ )
         {
             data[j][i] = kvs::String::To<T>( row[j] );
@@ -66,7 +70,8 @@ int main( int argc, char** argv )
 
     const size_t nrows = 20;
     const size_t ncols = 8;
-    kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1] ) : GenerateData<float>( nrows, ncols );
+    std::vector<std::string> labels;
+    kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1], labels ) : GenerateData<float>( nrows, ncols );
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
@@ -138,7 +143,7 @@ int main( int argc, char** argv )
 //    kmeans.run();
     
     kvs::ValueArray<kvs::Real32> c0 = kmeans.clusterCenter( 0 );
-    std::cout << "c0: (x, y) = (" << c0[0] << "," << c0[1] << ")" << std::endl;
+    //std::cout << "c0: (x, y) = (" << c0[0] << "," << c0[1] << ")" << std::endl;
     const size_t nclusters = kmeans.numberOfClusters();
     kvs::ValueArray<kvs::Real32> centers( nclusters * 2 );
     for( size_t i = 0; i < nclusters; i++ )
@@ -171,7 +176,7 @@ int main( int argc, char** argv )
     kmeans.run();
     
     kvs::ValueArray<kvs::Real32> c0 = kmeans.clusterCenter( 0 );
-    std::cout << "c0: (x, y) = (" << c0[0] << "," << c0[1] << ")" << std::endl;
+    //std::cout << "c0: (x, y) = (" << c0[0] << "," << c0[1] << ")" << std::endl;
     const size_t nclusters = kmeans.numberOfClusters();
     kvs::ValueArray<kvs::Real32> centers( nclusters * 2 );
     for( size_t i = 0; i < nclusters; i++ )
@@ -194,6 +199,7 @@ int main( int argc, char** argv )
     axis->enableAntiAliasing();
     axis->setAxisWidth( 2.0f );
     axis->setAxisColor( kvs::RGBColor::Black() );
+    axis->setLabels( labels );
     axis->setBackgroundColor( kvs::RGBAColor( kvs::RGBColor( 230, 230, 230 ), 0.8f ) );
     screen.registerObject( object, axis );
 
