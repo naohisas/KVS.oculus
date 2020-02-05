@@ -73,6 +73,7 @@ int main( int argc, char** argv )
     local::Screen screen( &app );
     local::MyTouchController controller( &screen );
 
+    screen.setSize( 1024, 1024 );
     screen.setBackgroundColor( kvs::RGBColor::White() );
     screen.show();
 
