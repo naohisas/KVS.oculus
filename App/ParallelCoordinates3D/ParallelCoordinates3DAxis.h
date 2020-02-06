@@ -26,6 +26,7 @@ private:
     kvs::RGBAColor m_background_color;
     size_t m_number_of_grid;
     std::vector<std::string> m_labels;
+    bool m_show_grids; ///< flags for showing the grids
     bool m_show_labels; ///< flags for showing the labels
     bool m_show_values; ///< flags for showing the values
 
