@@ -15,6 +15,7 @@ ParallelCoordinates3DAxis::ParallelCoordinates3DAxis():
     m_value_color( kvs::RGBColor::Black() ),
     m_background_color( kvs::RGBColor::White(), 0.0f ),
     m_number_of_grid( 3 ),
+    m_show_grids( true ),
     m_show_labels( true ),
     m_show_values( true )
 {
@@ -133,21 +134,24 @@ void ParallelCoordinates3DAxis::draw_gridlines( const kvs::TableObject* table, c
     const kvs::Vec3 max_coord = table->maxObjectCoord();
     float y_interval = ( max_coord.y() - min_coord.y() ) / (m_number_of_grid + 1);
     float z_interval = ( max_coord.z() - min_coord.z() ) / (m_number_of_grid + 1);
-    for ( size_t i = 0; i < m_plane_positions.size(); i++ )
+    if( m_show_grids )
     {
-        const float x_coord = m_plane_positions[i].x();
-        kvs::OpenGL::SetLineWidth( m_axis_width * dpr );
-        kvs::OpenGL::Color( m_axis_color );
-        for ( size_t j = 0; j < m_number_of_grid; j++ )
+        for ( size_t i = 0; i < m_plane_positions.size(); i++ )
         {
-            kvs::OpenGL::Begin( GL_LINE_STRIP );
-            kvs::OpenGL::Vertex( x_coord, min_coord.y(), min_coord.z() + z_interval * (j+1) );
-            kvs::OpenGL::Vertex( x_coord, max_coord.y(), min_coord.z() + z_interval * (j+1) );
-            kvs::OpenGL::End();
-            kvs::OpenGL::Begin( GL_LINE_STRIP );
-            kvs::OpenGL::Vertex( x_coord, min_coord.y() + y_interval * (j+1), min_coord.z() );
-            kvs::OpenGL::Vertex( x_coord, min_coord.y() + y_interval * (j+1), max_coord.z() );
-            kvs::OpenGL::End();
+            const float x_coord = m_plane_positions[i].x();
+            kvs::OpenGL::SetLineWidth( m_axis_width * dpr );
+            kvs::OpenGL::Color( m_axis_color );
+            for ( size_t j = 0; j < m_number_of_grid; j++ )
+            {
+                kvs::OpenGL::Begin( GL_LINE_STRIP );
+                kvs::OpenGL::Vertex( x_coord, min_coord.y(), min_coord.z() + z_interval * (j+1) );
+                kvs::OpenGL::Vertex( x_coord, max_coord.y(), min_coord.z() + z_interval * (j+1) );
+                kvs::OpenGL::End();
+                kvs::OpenGL::Begin( GL_LINE_STRIP );
+                kvs::OpenGL::Vertex( x_coord, min_coord.y() + y_interval * (j+1), min_coord.z() );
+                kvs::OpenGL::Vertex( x_coord, min_coord.y() + y_interval * (j+1), max_coord.z() );
+                kvs::OpenGL::End();
+            }
         }
     }
 }
