@@ -73,7 +73,7 @@ int main( int argc, char** argv )
     local::Screen screen( &app );
     local::MyTouchController controller( &screen );
 
-    screen.setSize( 1024, 1024 );
+    //screen.setSize( 1024, 1024 );
     screen.setBackgroundColor( kvs::RGBColor::White() );
     screen.show();
 
@@ -102,6 +102,15 @@ int main( int argc, char** argv )
     renderer->setLineColor( kvs::RGBColor::Red() );
     renderer->setBundledLineColor( kvs::RGBColor::Red() );
 
+    //kvs::ColorMap cmap = kvs::ColorMap::CoolWarm( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerBrBG( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerPiYG( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerPRGn( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerPuOr( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerRdBu( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerRdGy( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerRdYlBu( 256 );
+    //kvs::ColorMap cmap = kvs::ColorMap::BrewerRdYlGn( 256 );
     kvs::ColorMap cmap = kvs::ColorMap::BrewerSpectral( 256 );
     //kvs::ColorMap cmap( 256 );
     /*
