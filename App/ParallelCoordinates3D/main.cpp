@@ -29,8 +29,12 @@ typedef local::ParallelCoordinates3DRenderer Renderer;
 
 
 template <typename T>
-inline kvs::ValueTable<T> GenerateData( const size_t nrows, const size_t ncols )
+inline kvs::ValueTable<T> GenerateData( const size_t nrows, const size_t ncols, std::vector<std::string> &labels )
 {
+    for ( size_t i = 0; i < ncols; i++ )
+    {
+        labels.push_back( "Random" );
+    }
     return kvs::ValueTable<T>::Random( nrows, ncols );
 }
 
@@ -80,7 +84,7 @@ int main( int argc, char** argv )
     const size_t nrows = 20;
     const size_t ncols = 8;
     std::vector<std::string> labels;
-    kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1], labels ) : GenerateData<float>( nrows, ncols );
+    kvs::ValueTable<float> data = ( argc > 1 ) ? ReadData<float>( argv[1], labels ) : GenerateData<float>( nrows, ncols, labels );
 
     kvs::TableObject* object = new kvs::TableObject();
     object->setTable( data );
