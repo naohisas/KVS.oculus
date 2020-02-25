@@ -139,7 +139,7 @@ void ParallelCoordinates3DAxis::draw_gridlines( const kvs::TableObject* table, c
         for ( size_t i = 0; i < m_plane_positions.size(); i++ )
         {
             const float x_coord = m_plane_positions[i].x();
-            kvs::OpenGL::SetLineWidth( m_axis_width * dpr );
+            kvs::OpenGL::SetLineWidth( m_axis_width * dpr * 0.5 );
             kvs::OpenGL::Color( m_axis_color );
             for ( size_t j = 0; j < m_number_of_grid; j++ )
             {
