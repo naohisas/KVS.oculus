@@ -10,13 +10,10 @@ class BundledParallelCoordinates3DRenderer : public local::ParallelCoordinates3D
 {
     kvsModule( local::BundledParallelCoordinates3DRenderer, Renderer );
     kvsModuleBaseClass( local::ParallelCoordinates3DRenderer );
-public:
+private:
     float m_reduced_plane_scale;
     float m_curve_size;
     size_t m_bundled_position;
-private:
-    
-    
     kvs::ValueTable<float> m_reduced_data;
     kvs::ValueArray<float> m_reduced_min_values;
     kvs::ValueArray<float> m_reduced_max_values;
@@ -54,6 +51,7 @@ public:
     void setClusterCenters( const kvs::ValueArray<kvs::Real32>& centers ) { m_cluster_centers = centers; }
 
     float reducedPlaneScale() const { return m_reduced_plane_scale; }
+    float curveSize() const { return m_curve_size; }
     const kvs::ValueTable<float>& reducedData() const { return m_reduced_data; }
     size_t bundledPosition() const { return m_bundled_position; }
     float bundledLineSize() const { return m_bundled_line_size; }
