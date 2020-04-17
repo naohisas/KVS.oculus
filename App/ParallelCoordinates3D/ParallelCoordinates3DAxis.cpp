@@ -160,17 +160,19 @@ void ParallelCoordinates3DAxis::draw_labels( const kvs::TableObject* table, cons
 {
     const kvs::Vec3 min_coord = table->minObjectCoord();
     const kvs::Vec3 max_coord = table->maxObjectCoord();
-    const kvs::Vector3f center = ( max_coord + min_coord ) * 0.5f;
-    
-    // Depth values (Z values) in the camera coordinate system.
-    GLfloat m[16]; kvs::OpenGL::GetFloatv( GL_MODELVIEW_MATRIX, m );
-    const kvs::Real32 x_min = min_coord.x() * m[2] + center.y() * m[6] + center.z() * m[10] + m[14];
-    const kvs::Real32 x_max = max_coord.x() * m[2] + center.y() * m[6] + center.z() * m[10] + m[14];
-    const kvs::Real32 y_min = center.x() * m[2] + min_coord.y() * m[6] + center.z() * m[10] + m[14];
-    const kvs::Real32 y_max = center.x() * m[2] + max_coord.y() * m[6] + center.z() * m[10] + m[14];
-    const kvs::Real32 z_min = center.x() * m[2] + center.y() * m[6] + min_coord.z() * m[10] + m[14];
-    const kvs::Real32 z_max = center.x() * m[2] + center.y() * m[6] + max_coord.z() * m[10] + m[14];
-    
+
+    const kvs::Mat4 m = kvs::OpenGL::ModelViewMatrix();
+
+    // Center of the boundary box in the object coordinate system.
+    const kvs::Vec3 center = ( max_coord + min_coord ) * 0.5f;
+
+    // Depth values (Z values) at each boundary plane in the camera coordinate system.
+    const kvs::Real32 x_min = m[2].dot( kvs::Vec4( min_coord.x(), center.y(), center.z(), 1.0f ) );
+    const kvs::Real32 x_max = m[2].dot( kvs::Vec4( max_coord.x(), center.y(), center.z(), 1.0f ) );
+    const kvs::Real32 y_min = m[2].dot( kvs::Vec4( center.x(), min_coord.y(), center.z(), 1.0f ) );
+    const kvs::Real32 y_max = m[2].dot( kvs::Vec4( center.x(), max_coord.y(), center.z(), 1.0f ) );
+    const kvs::Real32 z_min = m[2].dot( kvs::Vec4( center.x(), center.y(), min_coord.z(), 1.0f ) );
+    const kvs::Real32 z_max = m[2].dot( kvs::Vec4( center.x(), center.y(), max_coord.z(), 1.0f ) );
 
     kvs::Vector3f min_value = min_coord;
     kvs::Vector3f max_value = max_coord;
