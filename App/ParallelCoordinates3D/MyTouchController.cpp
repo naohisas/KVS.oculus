@@ -51,7 +51,7 @@ void MyTouchController::frameEvent()
         {
             const double touch_distance = ( right_p - left_p ).length();
             const double d = touch_distance - m_touch_distance;
-            scale = renderer->m_reduced_plane_scale + d * m_scaling_factor;
+            scale = renderer->reducedPlaneScale() + d * m_scaling_factor;
             if (scale < 0)
             {
             scale = 0;
@@ -90,7 +90,7 @@ void MyTouchController::frameEvent()
         {
             const double left_x = left_p.x();
             const double d = left_x - m_left_x;
-            size = renderer->m_curve_size + d * m_size_factor;
+            size = renderer->curveSize() + d * m_size_factor;
             if (size < 0)
             {
                 size = 0.0f;
@@ -116,7 +116,7 @@ void MyTouchController::frameEvent()
         {
             const double right_x = right_p.x();
             const double d = m_right_x - right_x;
-            size = renderer->m_curve_size + d * m_size_factor;
+            size = renderer->curveSize() + d * m_size_factor;
             if (size < 0)
             {
                 size = 0.0f;
@@ -192,11 +192,11 @@ namespace local
     {
         typedef local::BundledParallelCoordinates3DRenderer Renderer;
         Renderer* renderer = Renderer::DownCast( scene()->renderer("Renderer") );
-        float size = renderer->m_curve_size;
-        float scale = renderer->m_reduced_plane_scale;
+        float size = renderer->curveSize();
+        float scale = renderer->reducedPlaneScale();
         kvs::TableObject* object = kvs::TableObject::DownCast( scene()->object("Object") );
         size_t numberOfPlanes = object->numberOfColumns() / 2 - 2;
-        size_t position = renderer->m_bundled_position;
+        size_t position = renderer->bundledPosition();
         switch ( event->key() )
         {
             case kvs::Key::z:
