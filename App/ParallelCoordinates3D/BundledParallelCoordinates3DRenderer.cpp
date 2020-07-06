@@ -56,62 +56,10 @@ void BundledParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::C
 
     const float dpr = camera->devicePixelRatio();
     //BaseClass::drawLines( table, dpr );
-    //BaseClass::drawPoints( table, dpr );
+    BaseClass::drawPoints( table, dpr );
     this->draw_bundled_lines( table, dpr );
-    this->draw_colored_points( table, dpr );
 
     BaseClass::stopTimer();
-}
-
-void BundledParallelCoordinates3DRenderer::draw_colored_points( const kvs::TableObject* table, const float dpr )
-{
-    // Rounded shape.
-    kvs::OpenGL::Enable( GL_POINT_SMOOTH );
-
-    kvs::OpenGL::SetPointSize( m_point_size * dpr );
-    kvs::OpenGL::Begin( GL_POINTS );
-
-    const float y_min_coord = table->minObjectCoord().y();
-    const float y_max_coord = table->maxObjectCoord().y();
-    const float z_min_coord = table->minObjectCoord().z();
-    const float z_max_coord = table->maxObjectCoord().z();
-
-    const size_t nplanes = table->numberOfColumns() / 2;
-    const float x_stride = (float)nplanes * 0.5f * ( table->maxObjectCoord().x() - table->minObjectCoord().x() ) / ( nplanes - 1 );
-    float x_coord =(float)nplanes * 0.5f * table->minObjectCoord().x();
-    for ( size_t i = 0; i < nplanes; i++, x_coord += x_stride )
-    {
-        const kvs::ValueArray<float>& y_values = table->column( 2 * i + 0 ).asValueArray<float>();
-        const kvs::ValueArray<float>& z_values = table->column( 2 * i + 1 ).asValueArray<float>();
-
-        const float y_min_value = table->minValue( 2 * i + 0 );
-        const float y_max_value = table->maxValue( 2 * i + 0 );
-        const float z_min_value = table->minValue( 2 * i + 1 );
-        const float z_max_value = table->maxValue( 2 * i + 1 );
-
-        const size_t npoints = y_values.size();
-        for ( size_t j = 0; j < npoints; j++ )
-        {
-            const float normalized_y_coord = ( y_values[j] - y_min_value ) / ( y_max_value - y_min_value );
-            const float normalized_z_coord = ( z_values[j] - z_min_value ) / ( z_max_value - z_min_value );
-            const float y_coord = ( y_max_coord - y_min_coord ) * normalized_y_coord + y_min_coord;
-            const float z_coord = ( z_max_coord - z_min_coord ) * normalized_z_coord + z_min_coord;
-
-            if ( m_nclusters > 0 )
-            {
-                const float value = static_cast<float>( m_clustered_color_ids.at(i) );
-                const kvs::RGBColor color = m_clustered_colors.at( value );
-                kvs::OpenGL::Color( color );
-            }
-            else
-            {
-                kvs::OpenGL::Color( m_bundled_line_color );
-            }
-
-            kvs::OpenGL::Vertex( x_coord, y_coord, z_coord );
-        }
-    }
-    kvs::OpenGL::End();
 }
 
 void BundledParallelCoordinates3DRenderer::draw_bundled_lines( const kvs::TableObject* table, const float dpr )
