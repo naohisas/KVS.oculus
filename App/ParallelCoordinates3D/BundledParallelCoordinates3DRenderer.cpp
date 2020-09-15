@@ -56,12 +56,12 @@ void BundledParallelCoordinates3DRenderer::exec( kvs::ObjectBase* object, kvs::C
 
     const float dpr = camera->devicePixelRatio();
     //BaseClass::drawLines( table, dpr );
-    if ( m_nclusters > 0 )
+    /*if ( m_nclusters > 0 )
             {
                 const float value = static_cast<float>( m_clustered_color_ids.at(i) );
                 const kvs::RGBColor color = m_clustered_colors.at( value );
                 local::ParallelCoordinates3DRenderer::setPointColor( color );
-            }
+            }*/
     BaseClass::drawPoints( table, dpr );
     this->draw_bundled_lines( table, dpr );
     //this->draw_colored_points( table, dpr );
